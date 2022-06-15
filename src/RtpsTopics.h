@@ -31,6 +31,9 @@
  *
  ****************************************************************************/
 
+#ifndef RTPS_TOPICS_H
+#define RTPS_TOPICS_H
+
 #include <fastcdr/Cdr.h>
 #include <condition_variable>
 #include <queue>
@@ -205,3 +208,5 @@ private:
 	 */
 	std::shared_ptr<TimeSync> _timesync;
 };
+
+#endif // RTPS_TOPIC_H
