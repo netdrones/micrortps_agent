@@ -93,14 +93,17 @@ LOCAL_SRC_FILES += \
     src/MicroRTPSAgent.cpp \
     src/micrortps_agent-jni.cpp \
 
+LOCAL_CFLAGS := \
+    -fvisibility=hidden
+
 LOCAL_CPPFLAGS := \
+    -fvisibility=hidden \
+    -DANDROID \
     -Wno-unused-but-set-variable
 
 LOCAL_CPP_FEATURES := rtti exceptions
 
 LOCAL_LDLIBS := -llog
-
-LOCAL_EXPORT_LDLIBS := -llog
 
 LOCAL_SHARED_LIBRARIES := \
     fastcdr \

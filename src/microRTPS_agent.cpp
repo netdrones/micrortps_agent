@@ -100,7 +100,7 @@ static void usage(const char *name)
 	       "  -f <sw-flow-control>    Activates UART link SW flow control\n"
 	       "  -g <hw-flow-control>    Activates UART link HW flow control\n"
 	       "  -i <ip-address>         Target remote IP address for UDP. Defaults to 127.0.0.1\n"
-	       "  -n <namespace>          Topics namespace. Identifies the vehicle in a multi-agent network\n"
+	       "  -n <namespace>          Topics namespace. Identifies the vehicle in a multi-g_agent network\n"
 	       "  -o <poll-ms>            UART polling timeout in milliseconds. Defaults to 1ms\n"
 	       "  -r <reception-port>     UDP port for receiving (local). Defaults to 2020\n"
 	       "  -s <sending-port>       UDP port for sending (remote). Defaults to 2019\n"
@@ -263,11 +263,11 @@ int main(int argc, char **argv)
 	}
 
 	/**
-	 * Set the system ID to Mission Computer, in order to identify the agent side
+	 * Set the system ID to Mission Computer, in order to identify the g_agent side
 	 *
-	 * Note: theoretically a multi-agent system is possible, but this would require
+	 * Note: theoretically a multi-g_agent system is possible, but this would require
 	 * adjustments in the way the timesync is done (would have to create a timesync
-	 * instance per agent). Keeping it contained for a 1:1 link for now is reasonable.
+	 * instance per g_agent). Keeping it contained for a 1:1 link for now is reasonable.
 	 */
 	const uint8_t sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
 

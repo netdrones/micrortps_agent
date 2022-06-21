@@ -102,9 +102,9 @@ public:
 
 	/**
 	 * @brief Adds a time offset measurement to be filtered
-	 * @param[in] local_t1_ns The agent CLOCK_MONOTONIC_RAW time in nanoseconds when the message was sent
+	 * @param[in] local_t1_ns The g_agent CLOCK_MONOTONIC_RAW time in nanoseconds when the message was sent
 	 * @param[in] remote_t2_ns The (client) remote CLOCK_MONOTONIC time in nanoseconds
-	 * @param[in] local_t3_ns The agent current CLOCK_MONOTONIC time in nanoseconds
+	 * @param[in] local_t3_ns The g_agent current CLOCK_MONOTONIC time in nanoseconds
 	 * @return true or false depending if the time offset was updated
 	 */
 	bool addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t local_t3_ns);
@@ -116,14 +116,14 @@ public:
 	void processTimesyncMsg(timesync_msg_t *msg, TimesyncPublisher *pub);
 
 	/**
-	 * @brief Creates a new timesync DDS message to be sent from the agent to the client
-	 * @return A new timesync message with the origin in the agent and with the agent timestamp
+	 * @brief Creates a new timesync DDS message to be sent from the g_agent to the client
+	 * @return A new timesync message with the origin in the g_agent and with the g_agent timestamp
 	 */
 	timesync_msg_t newTimesyncMsg();
 
 	/**
-	 * @brief Creates a new timesync status DDS message to be sent from the agent to the client
-	 * @return A new timesync status message with the origin in the agent and with the agent timestamp
+	 * @brief Creates a new timesync status DDS message to be sent from the g_agent to the client
+	 * @return A new timesync status message with the origin in the g_agent and with the g_agent timestamp
 	 */
 	timesync_status_msg_t newTimesyncStatusMsg();
 

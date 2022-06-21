@@ -1,116 +1,64 @@
 #include <jni.h>
 #include <memory>
 #include <string>
+#include <jni.h>
 #include "MicroRTPSAgent.h"
+#include <jni.h>
 
-static std::unique_ptr<netdrones::axon::MicroRTPSAgent> agent(nullptr);
-
-extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_nativeInitUDP(
-    JNIEnv*,
-    jobject
-) {
-    if (!agent) {
-        agent = std::make_unique<netdrones::axon::MicroRTPSAgent>();
-    }
-}
+static std::unique_ptr<netdrones::axon::MicroRTPSAgent> g_agent(nullptr);
 
 extern "C"
 void Java_es_netdron_axon_MicroRtpsAgent_nativeInitUART(
-    JNIEnv* env,
-    jobject ,
-    jstring device
+    JNIEnv*,
+    jclass,
+    jint fd,
+    jint baudrate,
+    jint poll_interval,
+    jboolean sw_flow_control,
+    jboolean hw_flow_control,
+    jboolean verbose
 ) {
-    if (!agent) {
-        auto pDevice = env->GetStringUTFChars(device, nullptr);
-        auto dev = std::string(pDevice);
-        agent = std::make_unique<netdrones::axon::MicroRTPSAgent>(dev);
-        env->ReleaseStringUTFChars(device, pDevice);
+    if (!g_agent) {
+        g_agent = std::make_unique<netdrones::axon::MicroRTPSAgent>(
+            fd,
+            baudrate,
+            poll_interval,
+            sw_flow_control,
+            hw_flow_control,
+            verbose
+        );
     }
 }
 
 extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setUARTDevice(
-    JNIEnv* env,
-    jobject,
-    jstring device
-) {
-    if (!agent) return;
-
-    auto pDevice = env->GetStringUTFChars(device, nullptr);
-    auto dev = std::string(pDevice);
-    agent->setUARTDevice(dev);
-    env->ReleaseStringUTFChars(device, pDevice);
+jboolean Java_es_netdron_axon_MicroRtpsAgent_start(JNIEnv*, jclass) {
+    if (!g_agent) return false;
+    return g_agent->Start();
 }
 
 extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setBaudrate(
-    JNIEnv* ,
-    jobject ,
-    jint baudrate
-) {
-    if (!agent) return;
-    agent->setBaudrate(static_cast<int>(baudrate));
+jboolean Java_es_netdron_axon_MicroRtpsAgent_stop(JNIEnv*, jclass) {
+    if (!g_agent) return false;
+    return g_agent->Stop();
 }
 
-extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setNamespace(
-    JNIEnv* env,
-    jobject,
-    jstring namespace_
-) {
-    if (!agent) return;
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void*) {
+    JNIEnv* env;
 
-    auto pNamespace = env->GetStringUTFChars(namespace_, nullptr);
-    auto ns = std::string(pNamespace);
-    agent->setNamespace(ns);
-    env->ReleaseStringUTFChars(namespace_, pNamespace);
-}
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
 
-extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setPollInterval(
-    JNIEnv*,
-    jobject,
-    jlong interval
-) {
-    if (!agent) return;
-    agent->setPollInterval(static_cast<int>(interval));
-}
+    auto klass = env->FindClass("es/netdron/axon/MicroRtpsAgent");
+    if (!klass) return JNI_ERR;
 
-extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setUDPRecvPort(
-    JNIEnv* ,
-    jobject ,
-    jint port
-) {
-    if (!agent) return;
-    agent->setRecvPort(port);
-}
+    static const JNINativeMethod methods[] = {
+        {"nativeInitUART", "(IIIZZZ)V", reinterpret_cast<void*>(Java_es_netdron_axon_MicroRtpsAgent_nativeInitUART)},
+        {"start", "()Z", reinterpret_cast<void*>(Java_es_netdron_axon_MicroRtpsAgent_start)},
+        {"stop", "()Z", reinterpret_cast<void*>(Java_es_netdron_axon_MicroRtpsAgent_stop)},
+    };
+    auto rc = env->RegisterNatives(klass, methods, sizeof(methods) / sizeof(JNINativeMethod));
+    if (rc != JNI_OK) return rc;
 
-extern "C"
-void Java_es_netdron_axon_MicroRtpsAgent_setUDPSendPort(
-    JNIEnv* ,
-    jobject ,
-    jint port
-) {
-    if (!agent) return;
-    agent->setSendPort(port);
-}
-
-extern "C"
-jboolean Java_es_netdron_axon_MicroRtpsAgent_start(
-    JNIEnv* ,
-    jobject
-) {
-    if (!agent) return false;
-    return agent->start();
-}
-
-extern "C"
-jboolean Java_es_netdron_axon_MicroRtpsAgent_stop(
-    JNIEnv* ,
-    jobject
-) {
-    if (!agent) return false;
-    return agent->stop();
+    return JNI_VERSION_1_6;
 }

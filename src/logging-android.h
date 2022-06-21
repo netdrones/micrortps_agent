@@ -3,7 +3,7 @@
 
 #include <android/log.h>
 
-#define MICRORTPS_AGENT_LOG_TAG "MicroRtpsAgent"
+#define MICRORTPS_AGENT_LOG_TAG "MicroRtpsAgentNative"
 
 #define  LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE,    MICRORTPS_AGENT_LOG_TAG, __VA_ARGS__)
 #define  LOGW(...)  __android_log_print(ANDROID_LOG_WARN,       MICRORTPS_AGENT_LOG_TAG, __VA_ARGS__)

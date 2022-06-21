@@ -36,11 +36,15 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <cstdlib>
+#include <cstring>
 #include <inttypes.h>
 #include <sys/ioctl.h>
 #if __has_include("px4_platform_common/log.h") && __has_include("px4_platform_common/time.h")
 #include <px4_platform_common/log.h>
 #include <px4_platform_common/time.h>
+#endif
+#ifdef ANDROID
+#include "android-log.h"
 #endif
 
 #if defined(__linux__) || defined(__PX4_LINUX)
@@ -184,7 +188,7 @@ ssize_t Transport_node::read(uint8_t *topic_id, char out_buffer[], size_t buffer
 	// The received message comes from this system. Discard it.
 	// This might happen when:
 	//   1. The same UDP port is being used to send a rcv packets or
-	//   2. The same topic on the agent is being used for outgoing and incoming data
+	//   2. The same topic on the g_agent is being used for outgoing and incoming data
 	if (header->sys_id == _sys_id) {
 		// Drop the message and continue with the read buffer
 		memmove(_rx_buffer, _rx_buffer + msg_start_pos + 1, _rx_buff_pos - (msg_start_pos + 1));
@@ -309,6 +313,16 @@ UART_node::UART_node(const char *uart_name, const uint32_t baudrate,
 	}
 }
 
+UART_node::UART_node(int fd, uint32_t baudrate, uint32_t poll_ms, bool hw_flow_control,
+					 bool sw_flow_control, uint8_t sys_id, bool debug)
+: Transport_node(sys_id, debug),
+  _uart_fd(fd),
+  _baudrate(baudrate),
+  _poll_ms(poll_ms),
+  _hw_flow_control(hw_flow_control),
+  _sw_flow_control(sw_flow_control) {
+}
+
 UART_node::~UART_node()
 {
 	close();
@@ -317,7 +331,9 @@ UART_node::~UART_node()
 int UART_node::init()
 {
 	// Open a serial port
-	_uart_fd = open(_uart_name, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (_uart_fd < 0) {
+		_uart_fd = open(_uart_name, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	}
 
 	if (_uart_fd < 0) {
 #ifndef PX4_ERR
@@ -337,8 +353,9 @@ int UART_node::init()
 
 	// Try to set baud rate
 	struct termios uart_config;
-	int termios_state;
+	int termios_state = 0;
 
+#ifndef ANDROID
 	// Back up the original uart configuration to restore it after exit
 	if ((termios_state = tcgetattr(_uart_fd, &uart_config)) < 0) {
 		int errno_bkp = errno;
@@ -346,11 +363,12 @@ int UART_node::init()
 		printf("\033[0;31m[ micrortps_transport ]\tUART transport: ERR GET CONF %s: %d (%d)\n\033[0m", _uart_name, termios_state,
 		       errno);
 #else
-		PX4_ERR("UART transport: ERR GET CONF %s: %d (%d)", _uart_name, termios_state, errno);
+		PX4_ERR("UART transport: ERR GET CONF %s: %d (%s)", _uart_name, termios_state, errno);
 #endif /* PX4_ERR */
 		close();
 		return -errno_bkp;
 	}
+#endif // ANDROID
 
 #if defined(__linux__) || defined(__PX4_LINUX)
 	uart_config.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
@@ -413,6 +431,7 @@ int UART_node::init()
 		return -errno_bkp;
 	}
 
+#ifndef ANDROID
 	if ((termios_state = tcsetattr(_uart_fd, TCSANOW, &uart_config)) < 0) {
 		int errno_bkp = errno;
 #ifndef PX4_ERR
@@ -423,8 +442,10 @@ int UART_node::init()
 		close();
 		return -errno_bkp;
 	}
+#endif
 
-#if defined(__linux__) || defined(__PX4_LINUX)
+
+#if !defined(ANDROID) && (defined(__linux__) || defined(__PX4_LINUX))
 	// For Linux, set high speed polling at the chip level. Since this routine relies on a USB latency
 	// change at the chip level it may fail on certain chip sets if their driver does not support this
 	// configuration request
@@ -525,11 +546,11 @@ ssize_t UART_node::node_read(void *buffer, size_t len)
 	ssize_t ret = 0;
 	int r = poll(_poll_fd, 1, _poll_ms);
 
-	if (r == 1 && (_poll_fd[0].revents & POLLIN)) {
+    if (r == 1 && (_poll_fd[0].revents & POLLIN)) {
 		ret = ::read(_uart_fd, buffer, len);
-	}
+    }
 
-	return ret;
+    return ret;
 }
 
 ssize_t UART_node::node_write(void *buffer, size_t len)

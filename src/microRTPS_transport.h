@@ -107,9 +107,13 @@ class UART_node: public Transport_node
 {
 public:
 	UART_node(const char *uart_name, const uint32_t baudrate,
-		  const uint32_t poll_ms, const bool hw_flow_control,
-		  const bool sw_flow_control, const uint8_t sys_id,
-			const bool debug);
+		      const uint32_t poll_ms, const bool hw_flow_control,
+		      const bool sw_flow_control, const uint8_t sys_id,
+			  const bool debug);
+	UART_node(int fd, uint32_t baudrate,
+			  uint32_t  poll_ms, bool hw_flow_control,
+			  bool sw_flow_control, uint8_t sys_id,
+			  bool debug);
 	virtual ~UART_node();
 
 	int init();
