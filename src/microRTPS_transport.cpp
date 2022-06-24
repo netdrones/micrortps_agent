@@ -370,7 +370,7 @@ int UART_node::init()
 	}
 #endif // ANDROID
 
-#if defined(__linux__) || defined(__PX4_LINUX)
+#if defined(__linux__) || defined(__PX4_LINUX) || defined(ANDROID)
 	uart_config.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
 	uart_config.c_oflag &= ~(OCRNL | ONLCR | ONLRET | ONOCR | OFILL | OPOST);
 

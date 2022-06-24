@@ -98,6 +98,7 @@ bool MicroRTPSAgent::Start() {
         while (running_) {
             // Publishing messages received from UART
             length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
+            LOGD("read %d bytes", length);
             if (length > 0) {
                 topics_->publish(topic_id, buffer, sizeof(buffer));
             }
