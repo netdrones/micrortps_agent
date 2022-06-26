@@ -5,7 +5,7 @@
 #include "MicroRTPSAgent.h"
 #include <jni.h>
 
-static std::unique_ptr<netdrones::axon::MicroRTPSAgent> g_agent(nullptr);
+static std::unique_ptr<netdrones::pilot::MicroRTPSAgent> g_agent(nullptr);
 
 extern "C"
 void Java_es_netdron_axon_MicroRtpsAgent_nativeInitUART(
@@ -19,7 +19,7 @@ void Java_es_netdron_axon_MicroRtpsAgent_nativeInitUART(
     jboolean verbose
 ) {
     if (!g_agent) {
-        g_agent = std::make_unique<netdrones::axon::MicroRTPSAgent>(
+        g_agent = std::make_unique<netdrones::pilot::MicroRTPSAgent>(
             fd,
             baudrate,
             poll_interval,

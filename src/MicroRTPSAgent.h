@@ -11,7 +11,7 @@
 #include "microRTPS_transport.h"
 #include "RtpsTopics.h"
 
-namespace netdrones { namespace axon {
+namespace netdrones { namespace pilot {
 
 /**
  * MicroRTPSAgent
@@ -65,6 +65,6 @@ private:
     std::thread sender_thread_;
 };
 
-} } // namespace netdrones:axon
+} } // namespace netdrones:pilot
 
 #endif // MICRO_RTPS_AGENT_H
