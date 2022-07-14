@@ -100,7 +100,7 @@ static void usage(const char *name)
 	       "  -f <sw-flow-control>    Activates UART link SW flow control\n"
 	       "  -g <hw-flow-control>    Activates UART link HW flow control\n"
 	       "  -i <ip-address>         Target remote IP address for UDP. Defaults to 127.0.0.1\n"
-	       "  -n <namespace>          Topics namespace. Identifies the vehicle in a multi-g_agent network\n"
+	       "  -n <namespace>          Topics namespace. Identifies the vehicle in a multi-agent network\n"
 	       "  -o <poll-ms>            UART polling timeout in milliseconds. Defaults to 1ms\n"
 	       "  -r <reception-port>     UDP port for receiving (local). Defaults to 2020\n"
 	       "  -s <sending-port>       UDP port for sending (remote). Defaults to 2019\n"

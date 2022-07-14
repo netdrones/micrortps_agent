@@ -93,6 +93,8 @@ LOCAL_SRC_FILES += \
     src/MicroRTPSAgent.cpp \
     src/micrortps_agent-jni.cpp \
 
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../src
+
 LOCAL_CFLAGS := \
     -fvisibility=hidden
 

@@ -39,6 +39,7 @@
  */
 
 #include "optical_flow_Subscriber.h"
+#include "logging-android.h"
 
 #include <fastrtps/Domain.h>
 #include <fastrtps/participant/Participant.h>
@@ -121,7 +122,11 @@ void optical_flow_Subscriber::SubListener::onSubscriptionMatched(Subscriber *sub
 	if (is_different_endpoint) {
 		if (info.status == MATCHED_MATCHING) {
 			n_matched++;
+#ifdef ANDROID
+			LOGD("[   micrortps_agent   ]\tsubscriber matched");
+#else
 			std::cout << "\033[0;37m[   micrortps_agent   ]\toptical_flow subscriber matched\033[0m" << std::endl;
+#endif // ANDROID
 
 		} else {
 			n_matched--;

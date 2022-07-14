@@ -22,7 +22,9 @@ MicroRTPSAgent::MicroRTPSAgent(int fd,
                                bool swFlowControl,
                                bool hwFlowControl,
                                bool verbose)
-: running_(false), topics_(std::make_unique<RtpsTopics>()) {
+: verbose_(verbose),
+  running_(false),
+  topics_(std::make_unique<RtpsTopics>()) {
     auto sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
     transport_ = std::make_unique<UART_node>(
         fd,
@@ -36,7 +38,6 @@ MicroRTPSAgent::MicroRTPSAgent(int fd,
     if (transport_->init() < 0) {
         LOGE("unable to initialize UART transport");
     }
-    LOGD("Created with UART transport: fd: %d, baudrate: %d, poll: %dms", fd, baudrate, pollIntervalMillis);
 }
 
 MicroRTPSAgent::~MicroRTPSAgent() {
@@ -45,11 +46,11 @@ MicroRTPSAgent::~MicroRTPSAgent() {
 
 bool MicroRTPSAgent::Start() {
     if (running_.load()) {
-        LOGI("microRTPS g_agent is already running");
         return false;
     }
 
-    LOGI("starting micrortps_agent");
+    LOGD("--- MicroRTPS Agent ---");
+    LOGD("ROS namespace: %s", ns_.c_str());
 
     running_ = true;
     sender_thread_ = std::thread([this] {
@@ -58,14 +59,14 @@ bool MicroRTPSAgent::Start() {
         uint8_t topic_id = 255;
         std::queue<uint8_t> send_queue;
 
-        topics_->set_timesync(std::make_shared<TimeSync>(true));
-        topics_->init(&send_queue_cond_, &send_queue_mutex_, &send_queue, "");
+        topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
+        topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue, ns_);
 
         while (running_) {
             std::unique_lock <std::mutex> lk(send_queue_mutex_);
 
             while (send_queue.empty() && running_) {
-                send_queue_cond_.wait(lk);
+                send_queue_cv_.wait(lk);
             }
 
             topic_id = send_queue.front();
@@ -98,8 +99,8 @@ bool MicroRTPSAgent::Start() {
         while (running_) {
             // Publishing messages received from UART
             length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
-            LOGD("read %d bytes", length);
             if (length > 0) {
+//                LOGD("read %d bytes", length);
                 topics_->publish(topic_id, buffer, sizeof(buffer));
             }
         }
