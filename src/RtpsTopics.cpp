@@ -45,329 +45,238 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 #endif // ANDROID
 
 	if (_debug_array_sub.init(1, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- debug_array subscriber started");
-#else
-		std::cout << "- debug_array subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting debug_array subscriber");
-#else
-		std::cerr << "Failed starting debug_array subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
-
 	if (_debug_key_value_sub.init(2, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- debug_key_value subscriber started");
-#else
-		std::cout << "- debug_key_value subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting debug_key_value subscriber");
-#else
-		std::cerr << "Failed starting debug_key_value subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_debug_value_sub.init(3, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- debug_value subscriber started");
-#else
-		std::cout << "- debug_value subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting debug_value subscriber");
-#else
-		std::cerr << "Failed starting debug_value subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_debug_vect_sub.init(4, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- debug_vect subscriber started");
-#else
-		std::cout << "- debug_vect subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGD("Failed starting debug_vect subscriber");
-#else
-		std::cerr << "Failed starting debug_vect subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_offboard_control_mode_sub.init(5, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- offboard_control_mode subscriber started");
-#else
-		std::cout << "- offboard_control_mode subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
-		std::cerr << "Failed starting offboard_control_mode subscriber" << std::endl;
-#endif // ANDROID
+		LOGE("Failed starting offboard_control_mode subscriber");
 		return false;
 	}
 
 
 	if (_optical_flow_sub.init(6, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- optical_flow subscriber started");
-#else
-		std::cout << "- optical_flow subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting optical_flow subscriber");
-#else
-		std::cerr << "Failed starting optical_flow subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_position_setpoint_sub.init(7, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- position_setpoint subscriber started");
-#else
-		std::cout << "- position_setpoint subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting position_setpoint subscriber");
-#else
-		std::cerr << "Failed starting position_setpoint subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_position_setpoint_triplet_sub.init(8, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- position_setpoint_triplet subscriber started");
-#else
-		std::cout << "- position_setpoint_triplet subscriber started" << std::endl;
-#endif
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting position_setpoint_triplet subscriber");
-#else
-		std::cerr << "Failed starting position_setpoint_triplet subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_telemetry_status_sub.init(9, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-#ifdef ANDROID
 		LOGD("- telemetry_status subscriber started");
-#else
-		std::cout << "- telemetry_status subscriber started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("Failed starting telemetry_status subscriber");
-#else
-		std::cerr << "Failed starting telemetry_status subscriber" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 
 
 	if (_timesync_sub.init(10, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- timesync subscriber started" << std::endl;
-
+		LOGD("- timesync subscriber started");
 	} else {
-		std::cerr << "Failed starting timesync subscriber" << std::endl;
+		LOGE("Failed starting timesync subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_command_sub.init(12, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_command subscriber started" << std::endl;
-
+		LOGD("- vehicle_command subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_command subscriber" << std::endl;
+		LOGE("Failed starting vehicle_command subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_local_position_setpoint_sub.init(14, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_local_position_setpoint subscriber started" << std::endl;
-
+		LOGD("- vehicle_local_position_setpoint subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_local_position_setpoint subscriber" << std::endl;
+		LOGE("Failed starting vehicle_local_position_setpoint subscriber");
 		return false;
 	}
 
 
 	if (_trajectory_setpoint_sub.init(15, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- trajectory_setpoint subscriber started" << std::endl;
-
+		LOGD("- trajectory_setpoint subscriber started");
 	} else {
-		std::cerr << "Failed starting trajectory_setpoint subscriber" << std::endl;
+		LOGE("Failed starting trajectory_setpoint subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_trajectory_waypoint_sub.init(20, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_trajectory_waypoint subscriber started" << std::endl;
-
+		LOGD("- vehicle_trajectory_waypoint subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_trajectory_waypoint subscriber" << std::endl;
+		LOGE("Failed starting vehicle_trajectory_waypoint subscriber");
 		return false;
 	}
 
 
 	if (_onboard_computer_status_sub.init(23, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- onboard_computer_status subscriber started" << std::endl;
-
+		LOGD("- onboard_computer_status subscriber started");
 	} else {
-		std::cerr << "Failed starting onboard_computer_status subscriber" << std::endl;
+		LOGE("Failed starting onboard_computer_status subscriber");
 		return false;
 	}
 
 
 	if (_trajectory_bezier_sub.init(24, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- trajectory_bezier subscriber started" << std::endl;
-
+		LOGD("- trajectory_bezier subscriber started");
 	} else {
-		std::cerr << "Failed starting trajectory_bezier subscriber" << std::endl;
+		LOGE("Failed starting trajectory_bezier subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_trajectory_bezier_sub.init(25, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_trajectory_bezier subscriber started" << std::endl;
-
+		LOGD("- vehicle_trajectory_bezier subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_trajectory_bezier subscriber" << std::endl;
+		LOGE("Failed starting vehicle_trajectory_bezier subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_mocap_odometry_sub.init(17, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_mocap_odometry subscriber started" << std::endl;
-
+		LOGD("- vehicle_mocap_odometry subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_mocap_odometry subscriber" << std::endl;
+		LOGE("Failed starting vehicle_mocap_odometry subscriber");
 		return false;
 	}
 
 
 	if (_vehicle_visual_odometry_sub.init(18, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
-		std::cout << "- vehicle_visual_odometry subscriber started" << std::endl;
-
+		LOGD("- vehicle_visual_odometry subscriber started");
 	} else {
-		std::cerr << "Failed starting vehicle_visual_odometry subscriber" << std::endl;
+		LOGE("Failed starting vehicle_visual_odometry subscriber");
 		return false;
 	}
 
+#ifdef ANDROID
+	LOGD("-----------------------");
+	LOGD("----   Publishers  ----");
+#else
 	std::cout << "\033[0;36m-----------------------\033[0m" << std::endl << std::endl;
 
 	// Initialise publishers
 	std::cout << "\033[0;36m----   Publishers  ----\033[0m" << std::endl;
+#endif // ANDROID
 
 	if (_timesync_pub.init(ns)) {
 		if (_timesync_fmu_in_pub.init(ns, std::string("fmu/timesync/in"))) {
 			_timesync->start(&_timesync_fmu_in_pub);
-			std::cout << "- timesync publishers started" << std::endl;
+			LOGD("- timesync publishers started");
 		}
 
 	} else {
-		std::cerr << "ERROR starting timesync publisher" << std::endl;
+		LOGE("ERROR starting timesync publisher");
 		return false;
 	}
 
 
 	if (_trajectory_waypoint_pub.init(ns)) {
-		std::cout << "- trajectory_waypoint publisher started" << std::endl;
-
+		LOGD("- trajectory_waypoint publisher started");
 	} else {
-		std::cerr << "ERROR starting trajectory_waypoint publisher" << std::endl;
+		LOGE("ERROR starting trajectory_waypoint publisher");
 		return false;
 	}
 
 
 	if (_vehicle_control_mode_pub.init(ns)) {
-		std::cout << "- vehicle_control_mode publisher started" << std::endl;
-
+		LOGD("- vehicle_control_mode publisher started");
 	} else {
-		std::cerr << "ERROR starting vehicle_control_mode publisher" << std::endl;
+		LOGE("ERROR starting vehicle_control_mode publisher");
 		return false;
 	}
 
 
 	if (_vehicle_odometry_pub.init(ns)) {
-		std::cout << "- vehicle_odometry publisher started" << std::endl;
-
+		LOGD("- vehicle_odometry publisher started");
 	} else {
-		std::cerr << "ERROR starting vehicle_odometry publisher" << std::endl;
+		LOGE("ERROR starting vehicle_odometry publisher");
 		return false;
 	}
 
 
 	if (_vehicle_status_pub.init(ns)) {
-		std::cout << "- vehicle_status publisher started" << std::endl;
-
+		LOGD("- vehicle_status publisher started");
 	} else {
-		std::cerr << "ERROR starting vehicle_status publisher" << std::endl;
+		LOGE("ERROR starting vehicle_status publisher");
 		return false;
 	}
 
 
 	if (_collision_constraints_pub.init(ns)) {
-		std::cout << "- collision_constraints publisher started" << std::endl;
-
+		LOGD("- collision_constraints publisher started");
 	} else {
-		std::cerr << "ERROR starting collision_constraints publisher" << std::endl;
+		LOGE("ERROR starting collision_constraints publisher");
 		return false;
 	}
 
 
 	if (_timesync_status_pub.init(ns, std::string("timesync_status"))) {
 		_timesync->init_status_pub(&_timesync_status_pub);
-		std::cout << "- timesync_status publisher started" << std::endl;
-
+		LOGD("- timesync_status publisher started");
 	} else {
-		std::cerr << "ERROR starting timesync_status publisher" << std::endl;
+		LOGE("ERROR starting timesync_status publisher");
 		return false;
 	}
 
 
 	if (_sensor_combined_pub.init(ns)) {
-		std::cout << "- sensor_combined publisher started" << std::endl;
-
+		LOGD("- sensor_combined publisher started");
 	} else {
-		std::cerr << "ERROR starting sensor_combined publisher" << std::endl;
+		LOGE("ERROR starting sensor_combined publisher");
 		return false;
 	}
 
 
 	if (_vehicle_trajectory_waypoint_desired_pub.init(ns)) {
-#ifdef ANDROID
 		LOGD("- vehicle_trajectory_waypoint_desired publisher started");
-#else
-		std::cout << "- vehicle_trajectory_waypoint_desired publisher started" << std::endl;
-#endif // ANDROID
 	} else {
-#ifdef ANDROID
 		LOGE("ERROR starting vehicle_trajectory_waypoint_desired publisher");
-#else
-		std::cerr << "ERROR starting vehicle_trajectory_waypoint_desired publisher" << std::endl;
-#endif // ANDROID
 		return false;
 	}
 

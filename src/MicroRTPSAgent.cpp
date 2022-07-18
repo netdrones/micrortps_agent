@@ -51,6 +51,7 @@ bool MicroRTPSAgent::Start() {
 
     LOGD("--- MicroRTPS Agent ---");
     LOGD("ROS namespace: %s", ns_.c_str());
+    LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHSOT_ONLY"));
 
     running_ = true;
     sender_thread_ = std::thread([this] {
@@ -100,7 +101,7 @@ bool MicroRTPSAgent::Start() {
             // Publishing messages received from UART
             length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
             if (length > 0) {
-//                LOGD("read %d bytes", length);
+                LOGD("read %d bytes", length);
                 topics_->publish(topic_id, buffer, sizeof(buffer));
             }
         }
@@ -116,8 +117,6 @@ bool MicroRTPSAgent::Stop() {
     if (running_.compare_exchange_strong(expected, false)) {
         server_thread_.join();
         sender_thread_.join();
-
-        LOGD("stopped");
     }
 
     return true;
