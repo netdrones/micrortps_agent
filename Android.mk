@@ -90,10 +90,12 @@ LOCAL_SRC_FILES := \
     src/vehicle_visual_odometry_Subscriber.cpp \
 
 LOCAL_SRC_FILES += \
+    src/USBSerial_node.cpp \
     src/MicroRTPSAgent.cpp \
     src/micrortps_agent-jni.cpp \
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../src
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/../utils/include
 
 LOCAL_CFLAGS := \
     -fvisibility=hidden
@@ -108,6 +110,7 @@ LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_LDLIBS := -llog
 
 LOCAL_SHARED_LIBRARIES := \
+	usb_serial \
     fastcdr \
     fastrtps \
 

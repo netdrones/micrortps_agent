@@ -1,5 +1,5 @@
-#ifndef MICRO_RTPS_AGENT_H
-#define MICRO_RTPS_AGENT_H
+#ifndef NETDRONES_MICRO_RTPS_AGENT_H
+#define NETDRONES_MICRO_RTPS_AGENT_H
 
 #include <cstdlib>
 #include <string>
@@ -11,12 +11,11 @@
 #include <mutex>
 #include "microRTPS_transport.h"
 #include "RtpsTopics.h"
+#include "../usb_serial/include/USBSerial.hpp"
 
-namespace netdrones { namespace pilot {
+namespace netdrones {
+namespace micrortps_agent {
 
-/**
- * MicroRTPSAgent
- */
 class MicroRTPSAgent {
 public:
     /**
@@ -24,17 +23,13 @@ public:
      *
      * @param fd    UART file descriptor
      * @param baudrate
-     * @param pollIntervalMillis
-     * @param swFlowControl
-     * @param hwFlowControl
+     * @param flow_ctrl 0: Disabled
      * @param verbose
      */
     MicroRTPSAgent(int fd,
                    int baudrate,
-                   int pollIntervalMillis,
-                   bool swFlowControl,
-                   bool hwFlowControl,
-                   bool verbose);
+                   int flow_ctrl=0,
+                   bool verbose=false);
 
     ~MicroRTPSAgent();
 
@@ -74,8 +69,10 @@ private:
     std::mutex send_queue_mutex_;
     std::thread server_thread_;
     std::thread sender_thread_;
+    mutable std::mutex mtx_;
 };
 
-} } // namespace netdrones:pilot
+} // namespace micrortps_agent
+} // namespace netdrones
 
-#endif // MICRO_RTPS_AGENT_H
+#endif // NETDRONES_MICRO_RTPS_AGENT_H

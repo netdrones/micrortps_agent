@@ -11,33 +11,27 @@
 #include "MicroRTPSAgent.h"
 #include "RtpsTopics.h"
 #include "microRTPS_timesync.h"
-#include "microRTPS_transport.h"
+#include "USBSerial_node.h"
 #include "logging-android.h"
 
-using netdrones::pilot::MicroRTPSAgent;
+using netdrones::micrortps_agent::MicroRTPSAgent;
 
-MicroRTPSAgent::MicroRTPSAgent(int fd,
+MicroRTPSAgent::MicroRTPSAgent(int uart_fd,
                                int baudrate,
-                               int pollIntervalMillis,
-                               bool swFlowControl,
-                               bool hwFlowControl,
+                               int flow_ctrl,
                                bool verbose)
 : verbose_(verbose),
   running_(false),
   topics_(std::make_unique<RtpsTopics>()) {
     auto sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
-    transport_ = std::make_unique<UART_node>(
-        fd,
+    transport_ = std::make_unique<USBSerial_node>(
+        uart_fd,
         baudrate,
-        pollIntervalMillis,
-        swFlowControl,
-        hwFlowControl,
+        flow_ctrl,
         sys_id,
         verbose
     );
-    if (transport_->init() < 0) {
-        LOGE("unable to initialize UART transport");
-    }
+
 }
 
 MicroRTPSAgent::~MicroRTPSAgent() {
@@ -49,11 +43,16 @@ bool MicroRTPSAgent::Start() {
         return false;
     }
 
+    if (transport_->init() < 0) {
+        LOGE("USB serial transport initialization failed");
+        return false;
+    }
+
     LOGD("--- MicroRTPS Agent ---");
     LOGD("ROS namespace: %s", ns_.c_str());
     LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHSOT_ONLY"));
 
-    running_ = true;
+    running_.store(true, std::memory_order_release);
     sender_thread_ = std::thread([this] {
         char buffer[BUFFER_SIZE];
         uint32_t length = 0;
@@ -94,14 +93,14 @@ bool MicroRTPSAgent::Start() {
 
     server_thread_ = std::thread([this] {
         uint8_t topic_id = 255;
-        int length;
+        ssize_t length;
         char buffer[BUFFER_SIZE];
 
         while (running_) {
             // Publishing messages received from UART
             length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
             if (length > 0) {
-                LOGD("read %d bytes", length);
+                LOGD("read %lu bytes", length);
                 topics_->publish(topic_id, buffer, sizeof(buffer));
             }
         }
@@ -113,8 +112,9 @@ bool MicroRTPSAgent::Start() {
 
 bool MicroRTPSAgent::Stop() {
     auto expected = true;
-    LOGI("stopping micrortps_agent");
-    if (running_.compare_exchange_strong(expected, false)) {
+    LOGD("stopping micrortps_agent");
+
+    if (running_.compare_exchange_strong(expected, false, std::memory_order_acquire)) {
         server_thread_.join();
         sender_thread_.join();
     }
