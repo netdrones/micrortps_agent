@@ -44,7 +44,7 @@
 #include <px4_platform_common/time.h>
 #endif
 #ifdef ANDROID
-#include "android-log.h"
+#include "logging-android.h"
 #endif
 
 #if defined(__linux__) || defined(__PX4_LINUX)

@@ -1,6 +1,7 @@
 // Copyright 2022 NetDrones Inc. All rights reserved.
 
 #include "errors.h"
+#include "logging-android.h"
 #include "USBSerial_node.h"
 
 using namespace netdrones::errors;
@@ -14,7 +15,8 @@ USBSerial_node::USBSerial_node(
     bool debug
 )
 : Transport_node(sys_id, debug),
-  serial_(uart_fd, baudrate, static_cast<USBSerial::FlowControl>(flow_ctrl)) {
+//  serial_(uart_fd, baudrate, static_cast<USBSerial::FlowControl>()) {
+  serial_(uart_fd, baudrate, USBSerial::RTS_CTS_HS) {
 }
 
 USBSerial_node::~USBSerial_node() {

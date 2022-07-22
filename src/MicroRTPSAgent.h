@@ -67,9 +67,11 @@ private:
     std::unique_ptr<RtpsTopics> topics_;
     std::condition_variable send_queue_cv_;
     std::mutex send_queue_mutex_;
-    std::thread server_thread_;
+    std::thread poll_serial_thread_;
     std::thread sender_thread_;
     mutable std::mutex mtx_;
+
+    void PollSerial();
 };
 
 } // namespace micrortps_agent

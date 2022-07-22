@@ -421,7 +421,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	break;
 
 	default:
-		printf("\033[1;33m[   micrortps_agent   ]\tUnexpected topic ID '%hhu' to publish. Please make sure the g_agent is capable of parsing the message associated to the topic ID '%hhu'\033[0m\n",
+		LOGW("[   micrortps_agent   ]\tUnexpected topic ID '%hhu' to publish. Please make sure the g_agent is capable of parsing the message associated to the topic ID '%hhu'",
 		       topic_ID, topic_ID);
 		break;
 	}

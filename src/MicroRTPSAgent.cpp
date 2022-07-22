@@ -31,7 +31,6 @@ MicroRTPSAgent::MicroRTPSAgent(int uart_fd,
         sys_id,
         verbose
     );
-
 }
 
 MicroRTPSAgent::~MicroRTPSAgent() {
@@ -91,21 +90,7 @@ bool MicroRTPSAgent::Start() {
         }
     });
 
-    server_thread_ = std::thread([this] {
-        uint8_t topic_id = 255;
-        ssize_t length;
-        char buffer[BUFFER_SIZE];
-
-        while (running_) {
-            // Publishing messages received from UART
-            length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
-            if (length > 0) {
-                LOGD("read %lu bytes", length);
-                topics_->publish(topic_id, buffer, sizeof(buffer));
-            }
-        }
-        topics_.reset();
-    });
+    poll_serial_thread_ = std::thread([this] { this->PollSerial(); });
 
     return true;
 }
@@ -115,9 +100,24 @@ bool MicroRTPSAgent::Stop() {
     LOGD("stopping micrortps_agent");
 
     if (running_.compare_exchange_strong(expected, false, std::memory_order_acquire)) {
-        server_thread_.join();
+        poll_serial_thread_.join();
         sender_thread_.join();
     }
 
     return true;
+}
+
+void MicroRTPSAgent::PollSerial() {
+    uint8_t topic_id = 255;
+    ssize_t length;
+    char buffer[BUFFER_SIZE];
+
+    while (running_) {
+        // Publishing messages received from UART
+        length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
+        if (length > 0) {
+            topics_->publish(topic_id, buffer, sizeof(buffer));
+        }
+    }
+    topics_.reset();
 }
