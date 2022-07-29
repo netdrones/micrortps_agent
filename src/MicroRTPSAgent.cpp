@@ -47,29 +47,31 @@ bool MicroRTPSAgent::Start() {
         return false;
     }
 
-    LOGD("--- MicroRTPS Agent ---");
-    LOGD("ROS namespace: %s", ns_.c_str());
-    LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHSOT_ONLY"));
+    LOGD("--- micrortps_agent ---");
+    LOGD("RTPS namespace: %s", ns_.c_str());
+    LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHOST_ONLY"));
 
     running_.store(true, std::memory_order_release);
+    exit_sender_thread_.store(false, std::memory_order_release);
+
+    std::queue<uint8_t>().swap(send_queue_);
+    topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
+    topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue_, ns_);
+
     sender_thread_ = std::thread([this] {
         char buffer[BUFFER_SIZE];
         uint32_t length = 0;
         uint8_t topic_id = 255;
-        std::queue<uint8_t> send_queue;
 
-        topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
-        topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue, ns_);
-
-        while (running_) {
+        while (running_ && !exit_sender_thread_) {
             std::unique_lock <std::mutex> lk(send_queue_mutex_);
 
-            while (send_queue.empty() && running_) {
+            while (send_queue_.empty() && !exit_sender_thread_) {
                 send_queue_cv_.wait(lk);
             }
 
-            topic_id = send_queue.front();
-            send_queue.pop();
+            topic_id = send_queue_.front();
+            send_queue_.pop();
             lk.unlock();
 
             auto header_length = transport_->get_header_length();
@@ -77,10 +79,11 @@ bool MicroRTPSAgent::Start() {
                                                     sizeof(buffer) - header_length);
             eprosima::fastcdr::Cdr scdr(cdrBuffer);
 
-            if (!running_) {
+            if (!exit_sender_thread_) {
                 if (topics_->getMsg(topic_id, scdr)) {
                     length = scdr.getSerializedDataLength();
 
+//                    LOGD("Write %u bytes to topic %d", length, topic_id);
                     length = transport_->write(topic_id, buffer, length);
                     if (length < 0) {
                         LOGE("Transport failed to write a topic: %d", topic_id);
@@ -90,7 +93,9 @@ bool MicroRTPSAgent::Start() {
         }
     });
 
-    poll_serial_thread_ = std::thread([this] { this->PollSerial(); });
+    poll_serial_thread_ = std::thread([this] {
+        this->PollSerial();
+    });
 
     return true;
 }
@@ -100,8 +105,12 @@ bool MicroRTPSAgent::Stop() {
     LOGD("stopping micrortps_agent");
 
     if (running_.compare_exchange_strong(expected, false, std::memory_order_acquire)) {
+        exit_sender_thread_ = true;
+        send_queue_cv_.notify_one();
+
         poll_serial_thread_.join();
         sender_thread_.join();
+        transport_.reset();
     }
 
     return true;
@@ -119,5 +128,6 @@ void MicroRTPSAgent::PollSerial() {
             topics_->publish(topic_id, buffer, sizeof(buffer));
         }
     }
+
     topics_.reset();
 }

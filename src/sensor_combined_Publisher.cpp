@@ -47,6 +47,7 @@
 #include <fastrtps/attributes/PublisherAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
 #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
+#include "logging-android.h"
 
 using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
@@ -103,6 +104,8 @@ void sensor_combined_Publisher::PubListener::onPublicationMatched(Publisher *pub
 	// are the same for all its subcomponents (publishers, subscribers)
 	bool is_different_endpoint = false;
 
+	LOGD("@@@ onPublicationMatched");
+
 	for (size_t i = 0; i < 6; i++) {
 		if (pub->getGuid().guidPrefix.value[i] != info.remoteEndpointGuid.guidPrefix.value[i]) {
 			is_different_endpoint = true;
@@ -114,11 +117,11 @@ void sensor_combined_Publisher::PubListener::onPublicationMatched(Publisher *pub
 	if (is_different_endpoint) {
 		if (info.status == MATCHED_MATCHING) {
 			n_matched++;
-			std::cout << "\033[0;37m[   micrortps_agent   ]\tsensor_combined publisher matched\033[0m" << std::endl;
+			LOGD("[[   micrortps_agent   ]\tsensor_combined publisher matched");
 
 		} else {
 			n_matched--;
-			std::cout << "\033[0;37m[   micrortps_agent   ]\tsensor_combined publisher unmatched\033[0m" << std::endl;
+			LOGD("[[   micrortps_agent   ]\tsensor_combined publisher unmatched");
 		}
 	}
 }

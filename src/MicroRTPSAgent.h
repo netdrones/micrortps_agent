@@ -1,3 +1,5 @@
+// Copyright 2022 NetDrones Inc. All rights reserved.
+
 #ifndef NETDRONES_MICRO_RTPS_AGENT_H
 #define NETDRONES_MICRO_RTPS_AGENT_H
 
@@ -62,7 +64,9 @@ public:
 private:
     bool verbose_;
     std::atomic<bool> running_;
+    std::atomic<bool> exit_sender_thread_;
     std::string ns_;
+    std::queue<uint8_t> send_queue_;
     std::unique_ptr<Transport_node> transport_;
     std::unique_ptr<RtpsTopics> topics_;
     std::condition_variable send_queue_cv_;
@@ -77,4 +81,4 @@ private:
 } // namespace micrortps_agent
 } // namespace netdrones
 
-#endif // NETDRONES_MICRO_RTPS_AGENT_H
+#endif //NETDRONES_MICRO_RTPS_AGENT_H
