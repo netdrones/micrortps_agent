@@ -263,11 +263,11 @@ int main(int argc, char **argv)
 	}
 
 	/**
-	 * Set the system ID to Mission Computer, in order to identify the g_agent side
+	 * Set the system ID to Mission Computer, in order to identify the agent side
 	 *
-	 * Note: theoretically a multi-g_agent system is possible, but this would require
+	 * Note: theoretically a multi-agent system is possible, but this would require
 	 * adjustments in the way the timesync is done (would have to create a timesync
-	 * instance per g_agent). Keeping it contained for a 1:1 link for now is reasonable.
+	 * instance per agent). Keeping it contained for a 1:1 link for now is reasonable.
 	 */
 	const uint8_t sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
 

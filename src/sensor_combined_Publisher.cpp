@@ -104,8 +104,6 @@ void sensor_combined_Publisher::PubListener::onPublicationMatched(Publisher *pub
 	// are the same for all its subcomponents (publishers, subscribers)
 	bool is_different_endpoint = false;
 
-	LOGD("@@@ onPublicationMatched");
-
 	for (size_t i = 0; i < 6; i++) {
 		if (pub->getGuid().guidPrefix.value[i] != info.remoteEndpointGuid.guidPrefix.value[i]) {
 			is_different_endpoint = true;

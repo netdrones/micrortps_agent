@@ -47,6 +47,7 @@
 #include <fastrtps/attributes/PublisherAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
 #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
+#include "logging-android.h"
 
 using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
@@ -114,11 +115,11 @@ void vehicle_status_Publisher::PubListener::onPublicationMatched(Publisher *pub,
 	if (is_different_endpoint) {
 		if (info.status == MATCHED_MATCHING) {
 			n_matched++;
-			std::cout << "\033[0;37m[   micrortps_agent   ]\tvehicle_status publisher matched\033[0m" << std::endl;
+			LOGD("[[   micrortps_agent   ]\tvehicle_status publisher matched");
 
 		} else {
 			n_matched--;
-			std::cout << "\033[0;37m[   micrortps_agent   ]\tvehicle_status publisher unmatched\033[0m" << std::endl;
+			LOGD("[[   micrortps_agent   ]\tvehicle_status publisher unmatched");
 		}
 	}
 }

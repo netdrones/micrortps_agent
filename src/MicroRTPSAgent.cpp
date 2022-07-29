@@ -23,7 +23,9 @@ MicroRTPSAgent::MicroRTPSAgent(int uart_fd,
 : verbose_(verbose),
   running_(false),
   topics_(std::make_unique<RtpsTopics>()) {
+    // Set the system ID to Mission computer
     auto sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
+
     transport_ = std::make_unique<USBSerial_node>(
         uart_fd,
         baudrate,
@@ -42,74 +44,86 @@ bool MicroRTPSAgent::Start() {
         return false;
     }
 
-    if (transport_->init() < 0) {
-        LOGE("USB serial transport initialization failed");
-        return false;
-    }
+    bool expected = false;
+    if (running_.compare_exchange_strong(expected, true, std::memory_order_release)) {
+        if (transport_->init() < 0) {
+            LOGE("USB serial transport initialization failed");
+            running_ = false;
+            return false;
+        }
 
-    LOGD("--- micrortps_agent ---");
-    LOGD("RTPS namespace: %s", ns_.c_str());
-    LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHOST_ONLY"));
+        LOGD("--- micrortps_agent ---");
+        LOGD("RTPS namespace: %s", ns_.c_str());
+        LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHOST_ONLY"));
 
-    running_.store(true, std::memory_order_release);
-    exit_sender_thread_.store(false, std::memory_order_release);
+        exit_sender_thread_ = false;
 
-    std::queue<uint8_t>().swap(send_queue_);
-    topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
-    topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue_, ns_);
+        std::queue<uint8_t>().swap(send_queue_);
+        topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
+        topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue_, ns_);
 
-    sender_thread_ = std::thread([this] {
-        char buffer[BUFFER_SIZE];
-        uint32_t length = 0;
-        uint8_t topic_id = 255;
+        sender_thread_ = std::thread([this] {
+            char buffer[BUFFER_SIZE];
+            uint32_t length = 0;
+            uint8_t topic_id = 255;
 
-        while (running_ && !exit_sender_thread_) {
-            std::unique_lock <std::mutex> lk(send_queue_mutex_);
+            while (running_ && !exit_sender_thread_) {
+                std::unique_lock <std::mutex> lk(send_queue_mutex_);
 
-            while (send_queue_.empty() && !exit_sender_thread_) {
-                send_queue_cv_.wait(lk);
-            }
+                while (send_queue_.empty() && !exit_sender_thread_) {
+                    send_queue_cv_.wait(lk);
+                }
+                if (exit_sender_thread_) {
+                    break;
+                }
 
-            topic_id = send_queue_.front();
-            send_queue_.pop();
-            lk.unlock();
+                topic_id = send_queue_.front();
+                send_queue_.pop();
+                lk.unlock();
 
-            auto header_length = transport_->get_header_length();
-            eprosima::fastcdr::FastBuffer cdrBuffer(&buffer[header_length],
-                                                    sizeof(buffer) - header_length);
-            eprosima::fastcdr::Cdr scdr(cdrBuffer);
+                auto header_length = transport_->get_header_length();
+                eprosima::fastcdr::FastBuffer cdrBuffer(&buffer[header_length],
+                                                        sizeof(buffer) - header_length);
+                eprosima::fastcdr::Cdr scdr(cdrBuffer);
 
-            if (!exit_sender_thread_) {
-                if (topics_->getMsg(topic_id, scdr)) {
-                    length = scdr.getSerializedDataLength();
+                if (!exit_sender_thread_) {
+                    if (topics_->getMsg(topic_id, scdr)) {
+                        length = scdr.getSerializedDataLength();
 
 //                    LOGD("Write %u bytes to topic %d", length, topic_id);
-                    length = transport_->write(topic_id, buffer, length);
-                    if (length < 0) {
-                        LOGE("Transport failed to write a topic: %d", topic_id);
+                        length = transport_->write(topic_id, buffer, length);
+                        if (length < 0) {
+                            LOGE("Transport failed to write a topic: %d", topic_id);
+                        }
                     }
                 }
             }
-        }
-    });
+        });
 
-    poll_serial_thread_ = std::thread([this] {
-        this->PollSerial();
-    });
+        poll_serial_thread_ = std::thread([this] {
+            this->PollSerial();
+        });
 
-    return true;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool MicroRTPSAgent::Stop() {
-    auto expected = true;
     LOGD("stopping micrortps_agent");
 
-    if (running_.compare_exchange_strong(expected, false, std::memory_order_acquire)) {
+    auto expected = true;
+    if (running_.compare_exchange_strong(expected, false)) {
         exit_sender_thread_ = true;
         send_queue_cv_.notify_one();
 
-        poll_serial_thread_.join();
-        sender_thread_.join();
+        if (sender_thread_.joinable()) {
+            sender_thread_.join();
+        }
+        if (poll_serial_thread_.joinable()) {
+            poll_serial_thread_.join();
+        }
         transport_.reset();
     }
 
