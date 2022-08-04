@@ -32,12 +32,12 @@
  ****************************************************************************/
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <errno.h>
+#include <cstdio>
+#include <cerrno>
 #include <sys/socket.h>
 #include <cstdlib>
 #include <cstring>
-#include <inttypes.h>
+#include <cinttypes>
 #include <sys/ioctl.h>
 #if __has_include("px4_platform_common/log.h") && __has_include("px4_platform_common/time.h")
 #include <px4_platform_common/log.h>
