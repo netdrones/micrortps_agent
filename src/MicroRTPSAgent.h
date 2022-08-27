@@ -11,6 +11,9 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#ifdef ROS_BRIDGE
+#include <rclcpp/rclcpp.hpp>
+#endif // ROS_BRIDGE
 #include "microRTPS_transport.h"
 #include "RtpsTopics.h"
 #include "../usb_serial/include/USBSerial.hpp"
@@ -64,15 +67,23 @@ public:
 private:
     bool verbose_;
     std::atomic_flag running_ = ATOMIC_FLAG_INIT;
-    bool exit_sender_thread_ = false;
+    std::atomic_bool exit_sender_thread_ = false;
     std::string ns_;
     std::queue<uint8_t> send_queue_;
     std::unique_ptr<Transport_node> transport_;
+#ifdef ROS_BRIDGE
+    std::shared_ptr<RtpsTopics> topics_;
+#else
     std::unique_ptr<RtpsTopics> topics_;
+#endif // ROS_BRIDGE
     std::condition_variable send_queue_cv_;
     std::mutex send_queue_mutex_;
     std::thread poll_serial_thread_;
     std::thread sender_thread_;
+#ifdef ROS_BRIDGE
+    std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> executor_;
+    std::thread executor_thread_;
+#endif // ROS_BRIDGE
     mutable std::mutex mtx_;
 
     void PollSerial();

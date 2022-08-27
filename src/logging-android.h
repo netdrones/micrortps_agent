@@ -12,7 +12,7 @@
 //#  define  LOGW(...)
 //#  define  LOGE(...)
 //#else
-//# ifdef ANDROID
+# ifdef __ANDROID__
 #  define PX4_DEBUG(format, ...)  __android_log_print(ANDROID_LOG_DEBUG, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #  define PX4_ERR(format, ...)  __android_log_print(ANDROID_LOG_ERROR, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #  define LOGV(format, ...)  __android_log_print(ANDROID_LOG_VERBOSE, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
@@ -20,7 +20,15 @@
 #  define LOGI(format, ...)  __android_log_print(ANDROID_LOG_INFO, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #  define LOGW(format, ...)  __android_log_print(ANDROID_LOG_WARN, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #  define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, ANDROID_LOG_TAG , "[%s:%d/%s] " format, basename(__FILE__), __LINE__, __FUNCTION__, ##__VA_ARGS__)
-//# endif // ANDROID
+#else
+#  define PX4_DEBUG(format, ...)
+#  define PX4_ERR(format, ...)
+#  define LOGV(format, ...)
+#  define LOGD(format, ...)
+#  define LOGI(format, ...)
+#  define LOGW(format, ...)
+#  define LOGE(format, ...)
+# endif // ANDROID
 //#endif
 
 #endif //MICRORTPS_AGENT_LOGGING_ANDROID_H

@@ -72,7 +72,6 @@ bool sensor_combined_Publisher::init(const std::string &ns, std::string topic_na
 	nodeName.append("sensor_combined_publisher");
 	PParam.rtps.setName(nodeName.c_str());
 
-
 	mp_participant = Domain::createParticipant(PParam);
 
 	if (mp_participant == nullptr) {

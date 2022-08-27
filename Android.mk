@@ -100,10 +100,13 @@ LOCAL_C_INCLUDES := \
 LOCAL_CFLAGS := \
     -fvisibility=hidden
 
+# FIXME(rakuto): ROS_BRIDGE flag workarounds a problem that Fast-DDS discovery not working on Android
+# that causes a Fast-DDS message cannot be received on a ROS node. With this flag, micrortps_agent
+# works as ROS node and publish and subscribe a message as ROS node.
 LOCAL_CPPFLAGS := \
     -fvisibility=hidden \
-    -DANDROID \
-    -Wno-unused-but-set-variable
+    -Wno-unused-but-set-variable \
+    -DROS_BRIDGE \
 
 LOCAL_CPP_FEATURES := rtti exceptions
 
@@ -113,6 +116,98 @@ LOCAL_SHARED_LIBRARIES := \
 	usb_serial \
     fastcdr \
     fastrtps \
+
+# ROS2 dependencies
+LOCAL_SHARED_LIBRARIES += \
+    ament_index_cpp \
+    builtin_interfaces__rosidl_generator_c \
+    builtin_interfaces__rosidl_typesupport_c \
+    builtin_interfaces__rosidl_typesupport_cpp \
+    builtin_interfaces__rosidl_typesupport_fastrtps_c \
+    builtin_interfaces__rosidl_typesupport_fastrtps_cpp \
+    builtin_interfaces__rosidl_typesupport_introspection_c \
+    builtin_interfaces__rosidl_typesupport_introspection_cpp \
+    fastcdr \
+    fastrtps \
+    geometry_msgs__rosidl_generator_c \
+    geometry_msgs__rosidl_typesupport_c \
+    geometry_msgs__rosidl_typesupport_cpp \
+    geometry_msgs__rosidl_typesupport_fastrtps_c \
+    geometry_msgs__rosidl_typesupport_fastrtps_cpp \
+    geometry_msgs__rosidl_typesupport_introspection_c \
+    geometry_msgs__rosidl_typesupport_introspection_cpp \
+    libstatistics_collector \
+    rcl \
+    rcl_interfaces__rosidl_generator_c \
+    rcl_interfaces__rosidl_typesupport_c \
+    rcl_interfaces__rosidl_typesupport_cpp \
+    rcl_interfaces__rosidl_typesupport_fastrtps_c \
+    rcl_interfaces__rosidl_typesupport_fastrtps_cpp \
+    rcl_interfaces__rosidl_typesupport_introspection_c \
+    rcl_interfaces__rosidl_typesupport_introspection_cpp \
+    rcl_logging_interface \
+    rcl_logging_spdlog \
+    rcl_yaml_param_parser \
+    rclcpp \
+    rcutils \
+    rcpputils \
+    rmw \
+    rmw_fastrtps_cpp \
+    rmw_fastrtps_shared_cpp \
+    rmw_implementation \
+    rmw_dds_common \
+    rmw_dds_common__rosidl_generator_c \
+    rmw_dds_common__rosidl_typesupport_c \
+    rmw_dds_common__rosidl_typesupport_cpp \
+    rmw_dds_common__rosidl_typesupport_fastrtps_c \
+    rmw_dds_common__rosidl_typesupport_fastrtps_cpp \
+    rmw_dds_common__rosidl_typesupport_introspection_c \
+    rmw_dds_common__rosidl_typesupport_introspection_cpp \
+    rosgraph_msgs__rosidl_generator_c \
+    rosgraph_msgs__rosidl_typesupport_c \
+    rosgraph_msgs__rosidl_typesupport_cpp \
+    rosgraph_msgs__rosidl_typesupport_introspection_c \
+    rosgraph_msgs__rosidl_typesupport_introspection_cpp \
+    rosidl_runtime_c \
+    rosidl_typesupport_c \
+    rosidl_typesupport_cpp \
+    rosidl_typesupport_fastrtps_c \
+    rosidl_typesupport_fastrtps_cpp \
+    rosidl_typesupport_introspection_c \
+    rosidl_typesupport_introspection_cpp \
+    spdlog \
+    statistics_msgs__rosidl_generator_c \
+    statistics_msgs__rosidl_typesupport_c \
+    statistics_msgs__rosidl_typesupport_cpp \
+    statistics_msgs__rosidl_typesupport_introspection_c \
+    statistics_msgs__rosidl_typesupport_introspection_cpp \
+    std_msgs__rosidl_generator_c \
+    std_msgs__rosidl_typesupport_c \
+    std_msgs__rosidl_typesupport_cpp \
+    std_msgs__rosidl_typesupport_fastrtps_c \
+    std_msgs__rosidl_typesupport_fastrtps_cpp \
+    std_msgs__rosidl_typesupport_introspection_c \
+    std_msgs__rosidl_typesupport_introspection_cpp \
+    sensor_msgs__rosidl_generator_c \
+    sensor_msgs__rosidl_typesupport_c \
+    sensor_msgs__rosidl_typesupport_cpp \
+    sensor_msgs__rosidl_typesupport_fastrtps_c \
+    sensor_msgs__rosidl_typesupport_fastrtps_cpp \
+    sensor_msgs__rosidl_typesupport_introspection_c \
+    sensor_msgs__rosidl_typesupport_introspection_cpp \
+    tracetools \
+    yaml \
+
+# px4_msgs
+LOCAL_SHARED_LIBRARIES += \
+	px4_msgs__rosidl_generator_c \
+	px4_msgs__rosidl_typesupport_c \
+	px4_msgs__rosidl_typesupport_cpp \
+	px4_msgs__rosidl_typesupport_fastrtps_c \
+	px4_msgs__rosidl_typesupport_fastrtps_cpp \
+	px4_msgs__rosidl_typesupport_introspection_c \
+	px4_msgs__rosidl_typesupport_introspection_cpp \
+	px4_msgs__rosidl_typesupport_introspection_cpp \
 
 LOCAL_ARM_MODE := arm
 
