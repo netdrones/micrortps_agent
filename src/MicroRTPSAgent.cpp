@@ -129,14 +129,18 @@ bool MicroRTPSAgent::Stop() {
         running_.clear(std::memory_order_release);
         send_queue_cv_.notify_one();
 
+        LOGD("stopping sender thread");
         if (sender_thread_.joinable()) {
             sender_thread_.join();
         }
+
+        LOGD("stopping serial thread");
         if (poll_serial_thread_.joinable()) {
             poll_serial_thread_.join();
         }
     }
 #ifdef ROS_BRIDGE
+    LOGD("stopping executor thread");
     if (executor_thread_.joinable()) {
         executor_->cancel();
         executor_thread_.join();
