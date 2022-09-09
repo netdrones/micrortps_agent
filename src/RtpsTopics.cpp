@@ -512,15 +512,16 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 #ifdef ROS_BRIDGE
 	// See also microRTPS_timersync.cpp
 	timesync_timer_ = this->create_wall_timer(100ms, [this]{
-		auto m = this->_timesync->newTimesyncMsg();
+		auto ts = this->_timesync->newTimesyncMsg();
 		Timesync msg;
-		msg.timestamp = m.timestamp_();
-		msg.seq = m.seq_();
-		msg.tc1 = m.tc1_();
-		msg.ts1 = m.ts1_();
+		msg.timestamp = ts.timestamp_();
+		msg.seq = ts.seq_();
+		msg.tc1 = ts.tc1_();
+		msg.ts1 = ts.ts1_();
 
 		this->timesync_fmu_in_pub_->publish(msg);
 	});
+	RCL_UNUSED(timesync_timer_);
 
 	LOGD("- timesync publishers started");
 	timesync_fmu_in_pub_ = this->create_publisher<Timesync>(
@@ -798,6 +799,8 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	break;
 
 	case 19: { // vehicle_status publisher
+		// TODO(rakuto): VehicleStatus.msg has been updated recently. Need to regenerate code.
+#if 0
 		vehicle_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -844,6 +847,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 #else
 		_vehicle_status_pub.publish(&st);
 #endif // ROS_BRIDGE
+#endif // if 0
 	}
 	break;
 
