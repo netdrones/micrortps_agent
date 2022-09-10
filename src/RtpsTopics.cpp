@@ -82,7 +82,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		      std::queue<uint8_t> *t_send_queue, const std::string &ns)
 {
 	// Initialise subscribers
-#ifdef ANDROID
+#ifdef __ANDROID__
 	LOGD("---   Subscribers   ---");
 #else
 	std::cout << "\033[0;36m---   Subscribers   ---\033[0m" << std::endl;
@@ -499,7 +499,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	}
 #endif // ROS_BRIDGE
 
-#ifdef ANDROID
+#ifdef __ANDROID__
 	LOGD("-----------------------");
 	LOGD("----   Publishers  ----");
 #else
@@ -512,21 +512,26 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 #ifdef ROS_BRIDGE
 	// See also microRTPS_timersync.cpp
 	timesync_timer_ = this->create_wall_timer(100ms, [this]{
-		auto ts = this->_timesync->newTimesyncMsg();
+		auto timesync = this->_timesync->newTimesyncMsg();
+
 		Timesync msg;
-		msg.timestamp = ts.timestamp_();
-		msg.seq = ts.seq_();
-		msg.tc1 = ts.tc1_();
-		msg.ts1 = ts.ts1_();
+		msg.timestamp = timesync.timestamp_();
+		msg.seq = timesync.seq_();
+		msg.tc1 = timesync.tc1_();
+		msg.ts1 = timesync.ts1_();
 
 		this->timesync_fmu_in_pub_->publish(msg);
 	});
 	RCL_UNUSED(timesync_timer_);
 
 	LOGD("- timesync publishers started");
-	timesync_fmu_in_pub_ = this->create_publisher<Timesync>(
+	timesync_pub_ = this->create_publisher<Timesync>(
 		ns + "fmu/timesync/out",
-		10
+		1
+	);
+	timesync_fmu_in_pub_ = this->create_publisher<Timesync>(
+		ns + "fmu/timesync/in",
+		1
 	);
 
 	LOGD("- trajectory_waypoint publisher started");
@@ -654,7 +659,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	}
 #endif // ROS_BRIDGE
 
-#ifdef ANDROID
+#ifdef __ANDROID__
 	LOGD("-----------------------");
 #else
 	std::cout << "\033[0;36m-----------------------\033[0m" << std::endl;
@@ -683,6 +688,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 		st.deserialize(cdr_des);
 #ifdef ROS_BRIDGE
 		// TODO: processTimesyncMsg
+		_timesync->processTimesyncMsg(&st, timesync_pub_);
 #else
 		_timesync->processTimesyncMsg(&st, &_timesync_pub);
 #endif // ROS_BRIDGE
@@ -693,6 +699,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 #ifdef ROS_BRIDGE
 		Timesync msg;
 		msg.timestamp = st.timestamp_();
+		msg.seq = st.seq_();
 		msg.tc1 = st.tc1_();
 		msg.ts1 = st.ts1_();
 		timesync_pub_->publish(msg);

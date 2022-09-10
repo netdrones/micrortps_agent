@@ -46,6 +46,11 @@
 #include "timesync_Publisher.h"
 #include "timesync_status_Publisher.h"
 
+#ifdef ROS_BRIDGE
+#include <rclcpp/rclcpp.hpp>
+#include <px4_msgs/msg/timesync.hpp>
+#endif // ROS_BRIDGE
+
 static constexpr double ALPHA_INITIAL = 0.05;
 static constexpr double ALPHA_FINAL = 0.003;
 static constexpr double BETA_INITIAL = 0.05;
@@ -108,6 +113,14 @@ public:
 	 * @return true or false depending if the time offset was updated
 	 */
 	bool addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t local_t3_ns);
+
+#ifdef ROS_BRIDGE
+	/**
+	 * @brief Processes DDS timesync message
+	 * @param[in,out] msg The timestamp msg to be processed
+	 */
+	void processTimesyncMsg(timesync_msg_t* msg, const rclcpp::Publisher<px4_msgs::msg::Timesync>::SharedPtr& pub);
+#endif // ROS_BRIDGE
 
 	/**
 	 * @brief Processes DDS timesync message

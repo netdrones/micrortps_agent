@@ -35,11 +35,12 @@
  * @brief source code for time sync implementation
  */
 
-#include <time.h>
+#include <ctime>
 #include <cmath>
 #include <iostream>
 
 #include "microRTPS_timesync.h"
+#include "logging-android.h"
 
 TimeSync::TimeSync(bool debug)
 	: _offset_ns(-1),
@@ -125,7 +126,13 @@ bool TimeSync::addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t
 	if (_request_reset_counter > REQUEST_RESET_COUNTER_THRESHOLD) {
 		reset();
 
-		if (_debug) { std::cout << "\033[1;33m[ micrortps__timesync ]\tTimesync clock changed, resetting\033[0m" << std::endl; }
+		if (_debug) {
+#ifdef __ANDROID__
+			LOGD("[ micrortps_timesync ] Timesync clock changed, resetting");
+#else
+			std::cout << "\033[1;33m[ micrortps__timesync ]\tTimesync clock changed, resetting\033[0m" << std::endl;
+#endif
+		}
 	}
 
 	if (_num_samples == 0) {
@@ -137,7 +144,13 @@ bool TimeSync::addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t
 		if (std::abs(measurement_offset - _offset_ns.load()) > TRIGGER_RESET_THRESHOLD_NS) {
 			_request_reset_counter++;
 
-			if (_debug) { std::cout << "\033[1;33m[ micrortps__timesync ]\tTimesync offset outlier, discarding\033[0m" << std::endl; }
+			if (_debug) {
+#ifdef __ANDROID__
+				LOGD("[ micrortps__timesync ] Timesync offset outlier, discarding");
+#else
+				std::cout << "\033[1;33m[ micrortps__timesync ]\tTimesync offset outlier, discarding\033[0m" << std::endl;
+#endif // __ANDROID__
+			}
 
 			return false;
 
@@ -173,6 +186,42 @@ bool TimeSync::addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t
 
 	return true;
 }
+
+#ifdef ROS_BRIDGE
+
+void TimeSync::processTimesyncMsg(timesync_msg_t* msg, const rclcpp::Publisher<px4_msgs::msg::Timesync>::SharedPtr& pub) {
+	if (getMsgSeq(msg) != _last_remote_msg_seq) {
+		_last_remote_msg_seq = getMsgSeq(msg);
+
+		if (getMsgTC1(msg) > 0) {
+			if (!addMeasurement(getMsgTS1(msg), getMsgTC1(msg), getSteadyTimeNSec())) {
+				if (_debug) {
+#ifdef ANDROID
+					LOGW("[ micrortps__timesync ] Offset not updated");
+#else
+					std::cerr << "\033[1;33m[ micrortps__timesync ]\tOffset not updated\033[0m"
+							  << std::endl;
+#endif // ANDROID
+				}
+			}
+
+		} else if (getMsgTC1(msg) == 0) {
+			setMsgTimestamp(msg, getSteadyTimeUSec());
+			setMsgSeq(msg, getMsgSeq(msg) + 1);
+			setMsgTC1(msg, getSteadyTimeNSec());
+
+			px4_msgs::msg::Timesync sync_msg;
+			sync_msg.timestamp = msg->timestamp_();
+			sync_msg.seq = msg->seq_();
+			sync_msg.tc1 = msg->tc1_();
+			sync_msg.ts1 = msg->ts1_();
+
+			pub->publish(sync_msg);
+		}
+	}
+}
+
+#endif // ROS_BRIDGE
 
 void TimeSync::processTimesyncMsg(timesync_msg_t *msg, TimesyncPublisher *pub)
 {
