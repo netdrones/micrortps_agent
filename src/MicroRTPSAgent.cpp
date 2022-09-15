@@ -38,6 +38,20 @@ MicroRTPSAgent::MicroRTPSAgent(int uart_fd,
     );
 }
 
+MicroRTPSAgent::MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send)
+#ifdef ROS_BRIDGE
+: topics_(std::make_shared<RtpsTopics>())
+#endif // ROS_BRIDGE
+{
+    auto sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
+    transport_ = std::make_unique<UDP_node>(
+            "127.0.0.1",
+            udp_port_recv,
+            udp_port_send,
+            sys_id,
+            verbose_);
+}
+
 MicroRTPSAgent::~MicroRTPSAgent() {
     Stop();
 }
@@ -121,31 +135,31 @@ bool MicroRTPSAgent::Start() {
 }
 
 bool MicroRTPSAgent::Stop() {
-    std::lock_guard lk(mtx_);
-
     LOGD("stopping micrortps_agent");
 
-    if (sender_thread_.joinable() || poll_serial_thread_.joinable()) {
+    if (running_.test(std::memory_order_acquire)) {
         running_.clear(std::memory_order_release);
-        send_queue_cv_.notify_one();
 
-        LOGD("stopping sender thread");
-        if (sender_thread_.joinable()) {
-            sender_thread_.join();
-        }
+        if (sender_thread_.joinable() || poll_serial_thread_.joinable()) {
+            send_queue_cv_.notify_one();
 
-        LOGD("stopping serial thread");
-        if (poll_serial_thread_.joinable()) {
-            poll_serial_thread_.join();
+            LOGD("stopping sender thread");
+            if (sender_thread_.joinable()) {
+                sender_thread_.join();
+            }
+
+            LOGD("stopping serial thread");
+            if (poll_serial_thread_.joinable()) {
+                poll_serial_thread_.join();
+            }
         }
-    }
 #ifdef ROS_BRIDGE
-    LOGD("stopping executor thread");
-    if (executor_thread_.joinable()) {
-        executor_->cancel();
-        executor_thread_.join();
-    }
+        if (executor_thread_.joinable()) {
+            executor_->cancel();
+            executor_thread_.join();
+        }
 #endif
+    }
 
     return true;
 }

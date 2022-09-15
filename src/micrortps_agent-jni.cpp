@@ -27,6 +27,17 @@ void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUART(
 }
 
 extern "C"
+void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUdp(
+    JNIEnv* env,
+    jobject thiz,
+    jint recv_port,
+    jint send_port
+) {
+    auto agent = new MicroRTPSAgent(recv_port, send_port);
+    SetNativeHandle(env, thiz, agent);
+}
+
+extern "C"
 void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_setRosLocalhostOnly(
     JNIEnv* env,
     jobject thiz,

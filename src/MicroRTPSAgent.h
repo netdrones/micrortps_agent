@@ -36,6 +36,14 @@ public:
                    int flow_ctrl=0,
                    bool verbose=false);
 
+    /**
+     * Create an agent backed with UDP ports.
+     *
+     * @param udp_port_recv
+     * @param udp_port_send
+     */
+    MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send);
+
     ~MicroRTPSAgent();
 
     MicroRTPSAgent(const MicroRTPSAgent &) = delete;
@@ -65,7 +73,7 @@ public:
     bool Stop();
 
 private:
-    bool verbose_;
+    bool verbose_ = false;
     std::atomic_flag running_ = ATOMIC_FLAG_INIT;
     std::atomic_bool exit_sender_thread_ = false;
     std::string ns_;
