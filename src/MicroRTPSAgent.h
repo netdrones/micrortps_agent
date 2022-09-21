@@ -44,7 +44,7 @@ public:
      */
     MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send);
 
-    ~MicroRTPSAgent();
+    ~MicroRTPSAgent() = default;
 
     MicroRTPSAgent(const MicroRTPSAgent &) = delete;
     MicroRTPSAgent(MicroRTPSAgent &&) = delete;

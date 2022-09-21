@@ -12,7 +12,8 @@ public:
                    int flow_ctrl,
                    uint8_t sys_id,
                    bool debug=false);
-    ~USBSerial_node();
+
+    ~USBSerial_node() = default;
 
     int init();
     uint8_t close();

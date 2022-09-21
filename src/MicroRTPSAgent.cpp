@@ -9,10 +9,10 @@
 #include <fastcdr/exceptions/Exception.h>
 #include <fastrtps/Domain.h>
 #include <rclcpp/rclcpp.hpp>
+#include "USBSerial_node.h"
 #include "MicroRTPSAgent.h"
 #include "RtpsTopics.h"
 #include "microRTPS_timesync.h"
-#include "USBSerial_node.h"
 #include "logging-android.h"
 
 using netdrones::micrortps_agent::MicroRTPSAgent;
@@ -50,10 +50,6 @@ MicroRTPSAgent::MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send)
             udp_port_send,
             sys_id,
             verbose_);
-}
-
-MicroRTPSAgent::~MicroRTPSAgent() {
-    Stop();
 }
 
 bool MicroRTPSAgent::Start() {
@@ -118,16 +114,15 @@ bool MicroRTPSAgent::Start() {
         }
     });
 
-    poll_serial_thread_ = std::thread([this] {
-        this->PollSerial();
-    });
+    poll_serial_thread_ = std::thread([this] { PollSerial(); });
 
 #ifdef ROS_BRIDGE
     executor_thread_ = std::thread([this] {
         executor_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
-        executor_->add_node(this->topics_);
-        executor_->spin();
-        executor_.reset();
+        executor_->add_node(topics_);
+        while (running_.test(std::memory_order_relaxed)) {
+            executor_->spin_some();
+        }
     });
 #endif // ROS_BRIDGE
 
@@ -135,28 +130,26 @@ bool MicroRTPSAgent::Start() {
 }
 
 bool MicroRTPSAgent::Stop() {
-    LOGD("stopping micrortps_agent");
+//    LOGD("stopping micrortps_agent");
 
     if (running_.test(std::memory_order_acquire)) {
         running_.clear(std::memory_order_release);
 
+        exit_sender_thread_ = true;
         if (sender_thread_.joinable() || poll_serial_thread_.joinable()) {
             send_queue_cv_.notify_one();
-
-            LOGD("stopping sender thread");
             if (sender_thread_.joinable()) {
                 sender_thread_.join();
             }
-
-            LOGD("stopping serial thread");
+            transport_->close();
             if (poll_serial_thread_.joinable()) {
                 poll_serial_thread_.join();
             }
         }
 #ifdef ROS_BRIDGE
         if (executor_thread_.joinable()) {
-            executor_->cancel();
             executor_thread_.join();
+            executor_.reset();
         }
 #endif
     }
@@ -166,14 +159,15 @@ bool MicroRTPSAgent::Stop() {
 
 void MicroRTPSAgent::PollSerial() {
     uint8_t topic_id = 255;
-    ssize_t length;
     char buffer[BUFFER_SIZE];
 
-    while (running_.test_and_set(std::memory_order_acquire)) {
+    while (running_.test(std::memory_order_acquire)) {
         // Publishing messages from UART to Fast-RTPS
-        length = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
-        if (length > 0) {
+        auto len = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
+        if (len > 0) {
             topics_->publish(topic_id, buffer, sizeof(buffer));
+        } else if (len < 0) {
+            break;
         }
     }
     topics_.reset();

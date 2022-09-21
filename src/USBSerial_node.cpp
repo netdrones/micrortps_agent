@@ -19,10 +19,6 @@ USBSerial_node::USBSerial_node(
   serial_(uart_fd, baudrate, USBSerial::RTS_CTS_HS) {
 }
 
-USBSerial_node::~USBSerial_node() {
-    this->close();
-}
-
 int USBSerial_node::init() {
     if (serial_.Open() != ERR_OK) {
         return -1;
@@ -35,8 +31,7 @@ bool USBSerial_node::fds_OK() {
 }
 
 uint8_t USBSerial_node::close() {
-    serial_.Close();
-    return 0;
+    return serial_.Close();
 }
 
 ssize_t USBSerial_node::node_read(void* buffer, size_t len) {

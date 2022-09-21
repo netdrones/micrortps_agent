@@ -94,7 +94,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	RCL_UNUSED(t_send_queue);
 
 	auto sub_opt = rclcpp::SubscriptionOptions();
-	sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+	sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 #if 0
 	LOGD("- debug_array subscriber started");
@@ -150,6 +150,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	RCL_UNUSED(debug_vect_sub_);
 #endif // if 0
 
+#if 0
 	LOGD("- offboard_control_mode subscriber started");
 	offboard_control_mode_sub_ = this->create_subscription<OffboardControlMode>(
 		ns + "fmu/offboard_control_mode/in",
@@ -162,6 +163,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		sub_opt
 	);
 	RCL_UNUSED(offboard_control_mode_sub_);
+#endif
 
 #if 0
 	LOGD("- optical_flow subscriber started");
@@ -176,7 +178,9 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		sub_opt
 	);
 	RCL_UNUSED(optical_flow_sub_);
-#endif
+
+	auto sub2_opt = rclcpp::SubscriptionOptions();
+	sub2_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- position_setpoint subscriber started");
 	position_setpoint_sub_ = this->create_subscription<PositionSetpoint>(
@@ -187,9 +191,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_position_setpoint_.wait(lk, [this] { return !this->position_setpoint_.get(); });
 			this->position_setpoint_ = std::move(msg);
 		},
-		sub_opt
+		sub2_opt
 	);
 	RCL_UNUSED(position_setpoint_sub_);
+
+	auto sub3_opt = rclcpp::SubscriptionOptions();
+	sub3_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- position_setpoint_triplet subscriber started");
 	position_setpoint_triplet_sub_ = this->create_subscription<PositionSetpointTriplet>(
@@ -200,9 +207,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_position_setpoint_triplet_.wait(lk, [this] { return !this->position_setpoint_triplet_.get(); });
 			this->position_setpoint_triplet_ = std::move(msg);
 		},
-		sub_opt
+		sub3_opt
 	);
 	RCL_UNUSED(position_setpoint_triplet_sub_);
+
+	auto sub4_opt = rclcpp::SubscriptionOptions();
+	sub4_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- telemetry_status subscriber started");
 	telemetry_status_sub_ = this->create_subscription<TelemetryStatus>(
@@ -213,10 +223,13 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_telemetry_status_.wait(lk, [this] { return !this->telemetry_status_.get(); });
 			this->telemetry_status_ = std::move(msg);
 		},
-		sub_opt
+		sub4_opt
 	);
 	RCL_UNUSED(telemetry_status_sub_);
+#endif
 
+	// TimeSync is never sent over Fast-RTPS.
+#if 0
 	LOGD("- timesync subscriber started");
 	timesync_sub_ = this->create_subscription<Timesync>(
 		ns + "fmu/timesync/in",
@@ -230,6 +243,9 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	);
 	RCL_UNUSED(timesync_sub_);
 
+	auto sub5_opt = rclcpp::SubscriptionOptions();
+	sub5_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
 	LOGD("- vehicle_command subscriber started");
 	vehicle_command_sub_ = this->create_subscription<VehicleCommand>(
 		ns + "fmu/vehicle_command/in",
@@ -239,9 +255,13 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_vehicle_command_.wait(lk, [this] { return !this->vehicle_command_.get(); });
 			this->vehicle_command_ = std::move(msg);
 		},
-		sub_opt
+		sub5_opt
 	);
 	RCL_UNUSED(vehicle_command_sub_);
+#endif
+
+	auto sub6_opt = rclcpp::SubscriptionOptions();
+	sub6_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_local_position_setpoint subscriber started");
 	vehicle_local_position_setpoint_sub_ = this->create_subscription<VehicleLocalPositionSetpoint>(
@@ -252,9 +272,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_vehicle_local_position_setpoint_.wait(lk, [this] { return !this->vehicle_local_position_setpoint_.get(); });
 			this->vehicle_local_position_setpoint_ = std::move(msg);
 		},
-		sub_opt
+		sub6_opt
 	);
 	RCL_UNUSED(vehicle_local_position_setpoint_sub_);
+
+	auto sub7_opt = rclcpp::SubscriptionOptions();
+	sub7_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- trajectory_setpoint subscriber started");
 	trajectory_setpoint_sub_ = this->create_subscription<TrajectorySetpoint>(
@@ -265,9 +288,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_trajectory_setpoint_.wait(lk, [this] { return !this->trajectory_setpoint_.get(); });
 			this->trajectory_setpoint_ = std::move(msg);
 		},
-		sub_opt
+		sub7_opt
 	);
 	RCL_UNUSED(trajectory_setpoint_sub_);
+
+	auto sub8_opt = rclcpp::SubscriptionOptions();
+	sub8_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_trajectory_waypoint subscriber started");
 	vehicle_trajectory_waypoint_sub_ = this->create_subscription<VehicleTrajectoryWaypoint>(
@@ -278,9 +304,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_vehicle_trajectory_waypoint_.wait(lk, [this] { return !this->vehicle_trajectory_waypoint_.get(); });
 			this->vehicle_trajectory_waypoint_ = std::move(msg);
 		},
-		sub_opt
+		sub8_opt
 	);
 	RCL_UNUSED(vehicle_trajectory_waypoint_sub_);
+
+	auto sub9_opt = rclcpp::SubscriptionOptions();
+	sub9_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- onboard_computer_status subscriber started");
 	onboard_computer_status_sub_ = this->create_subscription<OnboardComputerStatus>(
@@ -291,9 +320,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_onboard_computer_status_.wait(lk, [this] { return !this->onboard_computer_status_.get(); });
 			this->onboard_computer_status_ = std::move(msg);
 		},
-		sub_opt
+		sub9_opt
 	);
 	RCL_UNUSED(onboard_computer_status_sub_);
+
+	auto sub10_opt = rclcpp::SubscriptionOptions();
+	sub10_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- trajectory_bezier subscriber started");
 	trajectory_bezier_sub_ = this->create_subscription<TrajectoryBezier>(
@@ -304,9 +336,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_trajectory_bezier_.wait(lk, [this] { return !this->trajectory_bezier_.get(); });
 			this->trajectory_bezier_ = std::move(msg);
 		},
-		sub_opt
+		sub10_opt
 	);
 	RCL_UNUSED(trajectory_bezier_sub_);
+
+	auto sub11_opt = rclcpp::SubscriptionOptions();
+	sub11_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_trajectory_bezier subscriber started");
 	vehicle_trajectory_bezier_sub_ = this->create_subscription<VehicleTrajectoryBezier>(
@@ -317,10 +352,11 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_vehicle_trajectory_bezier_.wait(lk, [this] { return !this->vehicle_trajectory_bezier_.get(); });
 			this->vehicle_trajectory_bezier_ = std::move(msg);
 		},
-		sub_opt
+		sub11_opt
 	);
 	RCL_UNUSED(vehicle_trajectory_bezier_sub_);
 
+#if 0
 	LOGD("- vehicle_mocap_odometry subscriber started");
 	vehicle_mocap_odometry_sub_ = this->create_subscription<VehicleMocapOdometry>(
 		ns + "fmu/vehicle_mocap_odometry/in",
@@ -333,6 +369,10 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		sub_opt
 	);
 	RCL_UNUSED(vehicle_mocap_odometry_sub_);
+#endif
+
+	auto sub12_opt = rclcpp::SubscriptionOptions();
+	sub12_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_visual_odometry subscriber started");
 	vehicle_visual_odometry_sub_ = this->create_subscription<VehicleVisualOdometry>(
@@ -343,7 +383,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			this->cv_vehicle_visual_odometry_.wait(lk, [this] { return !this->vehicle_visual_odometry_.get(); });
 			this->vehicle_visual_odometry_ = std::move(msg);
 		},
-		sub_opt
+		sub12_opt
 	);
 	RCL_UNUSED(vehicle_visual_odometry_sub_);
 
@@ -419,13 +459,14 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	}
 
 
+#if 0
 	if (_timesync_sub.init(10, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
 		LOGD("- timesync subscriber started");
 	} else {
 		LOGE("Failed starting timesync subscriber");
 		return false;
 	}
-
+#endif
 
 	if (_vehicle_command_sub.init(12, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
 		LOGD("- vehicle_command subscriber started");
@@ -510,6 +551,8 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 #endif // ANDROID
 
 #ifdef ROS_BRIDGE
+	// TimeSync is never sent over Fast-RTPS.
+#if 0
 	// See also microRTPS_timersync.cpp
 	timesync_timer_ = this->create_wall_timer(100ms, [this]{
 		auto timesync = this->_timesync->newTimesyncMsg();
@@ -533,6 +576,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		ns + "fmu/timesync/in",
 		1
 	);
+#endif
 
 	LOGD("- trajectory_waypoint publisher started");
 	trajectory_waypoint_pub_ = this->create_publisher<TrajectoryWaypoint>(
@@ -681,6 +725,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 {
 	switch (topic_ID) {
 
+#if 0
 	case 10: { // timesync publisher
 		timesync_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
@@ -708,7 +753,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 #endif // ROS_BRIDGE
 	}
 	break;
-
+#endif
 	case 11: { // trajectory_waypoint publisher
 		trajectory_waypoint_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
