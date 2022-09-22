@@ -46,9 +46,6 @@
 #include <fastrtps/subscriber/Subscriber.h>
 #include <fastrtps/attributes/SubscriberAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
-#include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
-
-using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
 
 debug_key_value_Subscriber::debug_key_value_Subscriber()
@@ -72,7 +69,7 @@ bool debug_key_value_Subscriber::init(uint8_t topic_ID, std::condition_variable 
 
 	// Create RTPSParticipant
 	ParticipantAttributes PParam;
-	PParam.domainId = 0;
+//	//PParam.rtps.builtin.domainId = 0;
 	PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
 	std::string nodeName = ns;
 	nodeName.append("debug_key_value_subscriber");

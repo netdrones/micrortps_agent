@@ -228,8 +228,6 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	RCL_UNUSED(telemetry_status_sub_);
 #endif
 
-	// TimeSync is never sent over Fast-RTPS.
-#if 0
 	LOGD("- timesync subscriber started");
 	timesync_sub_ = this->create_subscription<Timesync>(
 		ns + "fmu/timesync/in",
@@ -238,8 +236,8 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			std::unique_lock lk(this->mtx_timesync_);
 			this->cv_timesync_.wait(lk, [this] { return !this->timesync_.get(); });
 			this->timesync_ = std::move(msg);
-		},
-		sub_opt
+		}
+//		sub_opt
 	);
 	RCL_UNUSED(timesync_sub_);
 
@@ -258,7 +256,6 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		sub5_opt
 	);
 	RCL_UNUSED(vehicle_command_sub_);
-#endif
 
 	auto sub6_opt = rclcpp::SubscriptionOptions();
 	sub6_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -551,10 +548,8 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 #endif // ANDROID
 
 #ifdef ROS_BRIDGE
-	// TimeSync is never sent over Fast-RTPS.
-#if 0
-	// See also microRTPS_timersync.cpp
-	timesync_timer_ = this->create_wall_timer(100ms, [this]{
+	// See also microRTPS_timesync.cpp
+	timesync_timer_ = this->create_wall_timer(500ms, [this]{
 		auto timesync = this->_timesync->newTimesyncMsg();
 
 		Timesync msg;
@@ -563,6 +558,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		msg.tc1 = timesync.tc1_();
 		msg.ts1 = timesync.ts1_();
 
+		LOGD("Send Timesync: %ld %ld", msg.tc1, msg.ts1);
 		this->timesync_fmu_in_pub_->publish(msg);
 	});
 	RCL_UNUSED(timesync_timer_);
@@ -570,13 +566,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	LOGD("- timesync publishers started");
 	timesync_pub_ = this->create_publisher<Timesync>(
 		ns + "fmu/timesync/out",
-		1
+		10
 	);
 	timesync_fmu_in_pub_ = this->create_publisher<Timesync>(
 		ns + "fmu/timesync/in",
-		1
+		10
 	);
-#endif
 
 	LOGD("- trajectory_waypoint publisher started");
 	trajectory_waypoint_pub_ = this->create_publisher<TrajectoryWaypoint>(
@@ -731,7 +726,6 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
 		st.deserialize(cdr_des);
 #ifdef ROS_BRIDGE
-		// TODO: processTimesyncMsg
 		_timesync->processTimesyncMsg(&st, timesync_pub_);
 #else
 		_timesync->processTimesyncMsg(&st, &_timesync_pub);
@@ -821,26 +815,20 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 		// apply timestamp offset
 		sync_timestamp_of_incoming_data(st);
 
-#ifdef ROS_BRIDGE
+#if ROS_BRIDGE
 		VehicleOdometry msg;
 		msg.timestamp = st.timestamp_();
 		msg.timestamp_sample = st.timestamp_sample_();
-		msg.local_frame = st.local_frame_();
-		msg.x = st.x_();
-		msg.y = st.y_();
-		msg.z = st.z_();
+		msg.position = st.position();
 		msg.q = st.q();
-		msg.q_offset = st.q_offset();
-		msg.pose_covariance = st.pose_covariance();
 		msg.velocity_frame = st.velocity_frame_();
-		msg.vx = st.vx_();
-		msg.vy = st.vy_();
-		msg.vz = st.vz_();
-		msg.rollspeed = st.rollspeed_();
-		msg.pitchspeed = st.pitchspeed_();
-		msg.yawspeed = st.yawspeed_();
-		msg.velocity_covariance = st.velocity_covariance();
+		msg.velocity = st.velocity();
+		msg.angular_velocity = st.angular_velocity();
+		msg.position_variance = st.position_variance();
+		msg.orientation_variance = st.orientation_variance();
+		msg.velocity_variance = st.velocity_variance();
 		msg.reset_counter = st.reset_counter_();
+		msg.quality = st.quality_();
 
 		vehicle_odometry_pub_->publish(msg);
 #else
@@ -850,8 +838,6 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	break;
 
 	case 21: { // vehicle_status publisher
-		// TODO(rakuto): VehicleStatus.msg has been updated recently. Need to regenerate code.
-#if 0
 		vehicle_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -888,17 +874,20 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 		msg.system_type = st.system_type_();
 		msg.system_id = st.system_id_();
 		msg.component_id = st.component_id_();
-		msg.onboard_control_sensors_present = st.onboard_control_sensors_present_();
-		msg.onboard_control_sensors_enabled = st.onboard_control_sensors_enabled_();
-		msg.onboard_control_sensors_health = st.onboard_control_sensors_health_();
 		msg.safety_button_available = st.safety_button_available_();
 		msg.safety_off = st.safety_off_();
+		msg.auto_mission_available = st.auto_mission_available_();
+		msg.power_input_valid = st.power_input_valid_();
+		msg.usb_connected = st.usb_connected_();
+		msg.parachute_system_present = st.parachute_system_present_();
+		msg.parachute_system_healthy = st.parachute_system_healthy_();
+		msg.avoidance_system_required = st.avoidance_system_required_();
+		msg.avoidance_system_valid = st.avoidance_system_valid_();
 
 		vehicle_status_pub_->publish(msg);
 #else
 		_vehicle_status_pub.publish(&st);
 #endif // ROS_BRIDGE
-#endif // if 0
 	}
 	break;
 
@@ -957,7 +946,6 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 
 		// apply timestamp offset
 		sync_timestamp_of_incoming_data(st);
-
 #ifdef ROS_BRIDGE
 		SensorCombined msg;
 		msg.timestamp = st.timestamp_();
@@ -1029,8 +1017,6 @@ void RtpsTopics::sync_timestamp_of_outgoing_data(T &msg) {
 bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 {
 	bool ret = false;
-
-	LOGD("getMsg: %d", topic_ID);
 
 	switch (topic_ID) {
 
@@ -1661,6 +1647,8 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 	}
 	case 19: { // vehicle_mocap_odometry subscriber
 #ifdef ROS_BRIDGE
+        // TODO: vehicle_mocap_odometry message was updated recently
+#if 0
 		std::unique_lock lk(mtx_vehicle_mocap_odometry_);
 		if (auto m = vehicle_mocap_odometry_.get()) {
             vehicle_mocap_odometry_msg_t msg;
@@ -1689,6 +1677,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
             msg.serialize(scdr);
             ret = true;
         }
+#endif
 #else
         if (_vehicle_mocap_odometry_sub.hasMsg()) {
             vehicle_mocap_odometry_msg_t msg = _vehicle_mocap_odometry_sub.getMsg();
@@ -1712,22 +1701,16 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
             msg.timestamp_(m->timestamp);
 			sync_timestamp_of_outgoing_data(msg);
 			msg.timestamp_sample_(m->timestamp_sample);
-			msg.local_frame_(m->local_frame);
-			msg.x_(m->x);
-			msg.y_(m->y);
-			msg.z_(m->z);
+			msg.pose_frame_(m->pose_frame);
+			msg.position(m->position);
 			msg.q(m->q);
-			msg.q_offset(m->q_offset);
-			msg.pose_covariance(m->pose_covariance);
 			msg.velocity_frame_(m->velocity_frame);
-			msg.vx_(m->vx);
-			msg.vy_(m->vy);
-			msg.vz_(m->vz);
-			msg.rollspeed_(m->rollspeed);
-			msg.pitchspeed_(m->pitchspeed);
-			msg.yawspeed_(m->yawspeed);
-			msg.velocity_covariance(m->velocity_covariance);
+			msg.velocity(m->velocity);
+			msg.angular_velocity(m->angular_velocity);
+			msg.orientation_variance(m->orientation_variance);
+			msg.velocity_variance(m->velocity_variance);
 			msg.reset_counter_(m->reset_counter);
+			msg.quality_(m->quality);
 
 			vehicle_visual_odometry_.reset();
 			cv_vehicle_visual_odometry_.notify_one();
@@ -1777,7 +1760,7 @@ void RtpsTopics::copyPositionSetpoint(const px4_msgs::msg::PositionSetpoint& m,
     msg.yaw_valid_(m.yaw_valid);
     msg.yawspeed_(m.yawspeed);
     msg.yawspeed_valid_(m.yawspeed_valid);
-    msg.landing_gear_(m.landing_gear);
+//    msg.landing_gear_(m.landing_gear);
     msg.loiter_radius_(m.loiter_radius);
     msg.loiter_direction_(m.loiter_direction);
     msg.acceptance_radius_(m.acceptance_radius);

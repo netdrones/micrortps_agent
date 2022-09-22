@@ -40,54 +40,53 @@ using namespace eprosima::fastcdr::exception;
 
 
 
-
 position_setpoint::position_setpoint()
 {
-    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@f4168b8
+    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@7c711375
     m_timestamp_ = 0;
-    // m_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3bd94634
+    // m_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@57cf54e1
     m_valid_ = false;
-    // m_type_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@58a90037
+    // m_type_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@5b03b9fe
     m_type_ = 0;
-    // m_vx_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@74294adb
+    // m_vx_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@37d4349f
     m_vx_ = 0.0;
-    // m_vy_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@70a9f84e
+    // m_vy_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@434a63ab
     m_vy_ = 0.0;
-    // m_vz_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@130f889
+    // m_vz_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@6e0f5f7f
     m_vz_ = 0.0;
-    // m_velocity_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1188e820
+    // m_velocity_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@2805d709
     m_velocity_valid_ = false;
-    // m_velocity_frame_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@2f490758
+    // m_velocity_frame_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3ee37e5a
     m_velocity_frame_ = 0;
-    // m_alt_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@101df177
+    // m_alt_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@2ea41516
     m_alt_valid_ = false;
-    // m_lat_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@166fa74d
+    // m_lat_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3a44431a
     m_lat_ = 0.0;
-    // m_lon_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@40f08448
+    // m_lon_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3c7f66c4
     m_lon_ = 0.0;
-    // m_alt_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@276438c9
+    // m_alt_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@194bcebf
     m_alt_ = 0.0;
-    // m_yaw_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@588df31b
+    // m_yaw_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@17497425
     m_yaw_ = 0.0;
-    // m_yaw_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@33b37288
+    // m_yaw_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@f0da945
     m_yaw_valid_ = false;
-    // m_yawspeed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@77a57272
+    // m_yawspeed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@4803b726
     m_yawspeed_ = 0.0;
-    // m_yawspeed_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@7181ae3f
+    // m_yawspeed_valid_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@ffaa6af
     m_yawspeed_valid_ = false;
-    // m_landing_gear_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@46238e3f
-    m_landing_gear_ = 0;
-    // m_loiter_radius_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@6e2c9341
+    // m_loiter_radius_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@53ce1329
     m_loiter_radius_ = 0.0;
-    // m_loiter_direction_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@32464a14
+    // m_loiter_direction_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@316bcf94
     m_loiter_direction_ = 0;
-    // m_acceptance_radius_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@4e4aea35
+    // m_acceptance_radius_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@6404f418
     m_acceptance_radius_ = 0.0;
-    // m_cruising_speed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1442d7b5
+    // m_cruising_speed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3e11f9e9
     m_cruising_speed_ = 0.0;
-    // m_cruising_throttle_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1efee8e7
+    // m_gliding_enabled_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1de5f259
+    m_gliding_enabled_ = false;
+    // m_cruising_throttle_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@729d991e
     m_cruising_throttle_ = 0.0;
-    // m_disable_weather_vane_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1ee807c6
+    // m_disable_weather_vane_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@31fa1761
     m_disable_weather_vane_ = false;
 
 }
@@ -137,11 +136,11 @@ position_setpoint::position_setpoint(const position_setpoint &x)
     m_yaw_valid_ = x.m_yaw_valid_;
     m_yawspeed_ = x.m_yawspeed_;
     m_yawspeed_valid_ = x.m_yawspeed_valid_;
-    m_landing_gear_ = x.m_landing_gear_;
     m_loiter_radius_ = x.m_loiter_radius_;
     m_loiter_direction_ = x.m_loiter_direction_;
     m_acceptance_radius_ = x.m_acceptance_radius_;
     m_cruising_speed_ = x.m_cruising_speed_;
+    m_gliding_enabled_ = x.m_gliding_enabled_;
     m_cruising_throttle_ = x.m_cruising_throttle_;
     m_disable_weather_vane_ = x.m_disable_weather_vane_;
 }
@@ -164,11 +163,11 @@ position_setpoint::position_setpoint(position_setpoint &&x)
     m_yaw_valid_ = x.m_yaw_valid_;
     m_yawspeed_ = x.m_yawspeed_;
     m_yawspeed_valid_ = x.m_yawspeed_valid_;
-    m_landing_gear_ = x.m_landing_gear_;
     m_loiter_radius_ = x.m_loiter_radius_;
     m_loiter_direction_ = x.m_loiter_direction_;
     m_acceptance_radius_ = x.m_acceptance_radius_;
     m_cruising_speed_ = x.m_cruising_speed_;
+    m_gliding_enabled_ = x.m_gliding_enabled_;
     m_cruising_throttle_ = x.m_cruising_throttle_;
     m_disable_weather_vane_ = x.m_disable_weather_vane_;
 }
@@ -192,11 +191,11 @@ position_setpoint& position_setpoint::operator=(const position_setpoint &x)
     m_yaw_valid_ = x.m_yaw_valid_;
     m_yawspeed_ = x.m_yawspeed_;
     m_yawspeed_valid_ = x.m_yawspeed_valid_;
-    m_landing_gear_ = x.m_landing_gear_;
     m_loiter_radius_ = x.m_loiter_radius_;
     m_loiter_direction_ = x.m_loiter_direction_;
     m_acceptance_radius_ = x.m_acceptance_radius_;
     m_cruising_speed_ = x.m_cruising_speed_;
+    m_gliding_enabled_ = x.m_gliding_enabled_;
     m_cruising_throttle_ = x.m_cruising_throttle_;
     m_disable_weather_vane_ = x.m_disable_weather_vane_;
 
@@ -222,11 +221,11 @@ position_setpoint& position_setpoint::operator=(position_setpoint &&x)
     m_yaw_valid_ = x.m_yaw_valid_;
     m_yawspeed_ = x.m_yawspeed_;
     m_yawspeed_valid_ = x.m_yawspeed_valid_;
-    m_landing_gear_ = x.m_landing_gear_;
     m_loiter_radius_ = x.m_loiter_radius_;
     m_loiter_direction_ = x.m_loiter_direction_;
     m_acceptance_radius_ = x.m_acceptance_radius_;
     m_cruising_speed_ = x.m_cruising_speed_;
+    m_gliding_enabled_ = x.m_gliding_enabled_;
     m_cruising_throttle_ = x.m_cruising_throttle_;
     m_disable_weather_vane_ = x.m_disable_weather_vane_;
 
@@ -286,9 +285,6 @@ size_t position_setpoint::getMaxCdrSerializedSize(size_t current_alignment)
     current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
 
 
-    current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
-
-
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
 
 
@@ -299,6 +295,9 @@ size_t position_setpoint::getMaxCdrSerializedSize(size_t current_alignment)
 
 
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
+
+
+    current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
 
 
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
@@ -365,9 +364,6 @@ size_t position_setpoint::getCdrSerializedSize(const position_setpoint& data, si
     current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
 
 
-    current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
-
-
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
 
 
@@ -378,6 +374,9 @@ size_t position_setpoint::getCdrSerializedSize(const position_setpoint& data, si
 
 
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
+
+
+    current_alignment += 1 + eprosima::fastcdr::Cdr::alignment(current_alignment, 1);
 
 
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
@@ -409,11 +408,11 @@ void position_setpoint::serialize(eprosima::fastcdr::Cdr &scdr) const
     scdr << m_yaw_valid_;
     scdr << m_yawspeed_;
     scdr << m_yawspeed_valid_;
-    scdr << m_landing_gear_;
     scdr << m_loiter_radius_;
     scdr << m_loiter_direction_;
     scdr << m_acceptance_radius_;
     scdr << m_cruising_speed_;
+    scdr << m_gliding_enabled_;
     scdr << m_cruising_throttle_;
     scdr << m_disable_weather_vane_;
 }
@@ -437,11 +436,11 @@ void position_setpoint::deserialize(eprosima::fastcdr::Cdr &dcdr)
     dcdr >> m_yaw_valid_;
     dcdr >> m_yawspeed_;
     dcdr >> m_yawspeed_valid_;
-    dcdr >> m_landing_gear_;
     dcdr >> m_loiter_radius_;
     dcdr >> m_loiter_direction_;
     dcdr >> m_acceptance_radius_;
     dcdr >> m_cruising_speed_;
+    dcdr >> m_gliding_enabled_;
     dcdr >> m_cruising_throttle_;
     dcdr >> m_disable_weather_vane_;
 }
@@ -879,33 +878,6 @@ bool& position_setpoint::yawspeed_valid_()
 }
 
 /*!
- * @brief This function sets a value in member landing_gear_
- * @param _landing_gear_ New value for member landing_gear_
- */
-void position_setpoint::landing_gear_(uint8_t _landing_gear_)
-{
-m_landing_gear_ = _landing_gear_;
-}
-
-/*!
- * @brief This function returns the value of member landing_gear_
- * @return Value of member landing_gear_
- */
-uint8_t position_setpoint::landing_gear_() const
-{
-    return m_landing_gear_;
-}
-
-/*!
- * @brief This function returns a reference to member landing_gear_
- * @return Reference to member landing_gear_
- */
-uint8_t& position_setpoint::landing_gear_()
-{
-    return m_landing_gear_;
-}
-
-/*!
  * @brief This function sets a value in member loiter_radius_
  * @param _loiter_radius_ New value for member loiter_radius_
  */
@@ -1011,6 +983,33 @@ float position_setpoint::cruising_speed_() const
 float& position_setpoint::cruising_speed_()
 {
     return m_cruising_speed_;
+}
+
+/*!
+ * @brief This function sets a value in member gliding_enabled_
+ * @param _gliding_enabled_ New value for member gliding_enabled_
+ */
+void position_setpoint::gliding_enabled_(bool _gliding_enabled_)
+{
+m_gliding_enabled_ = _gliding_enabled_;
+}
+
+/*!
+ * @brief This function returns the value of member gliding_enabled_
+ * @return Value of member gliding_enabled_
+ */
+bool position_setpoint::gliding_enabled_() const
+{
+    return m_gliding_enabled_;
+}
+
+/*!
+ * @brief This function returns a reference to member gliding_enabled_
+ * @return Reference to member gliding_enabled_
+ */
+bool& position_setpoint::gliding_enabled_()
+{
+    return m_gliding_enabled_;
 }
 
 /*!

@@ -46,10 +46,6 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/attributes/PublisherAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
-#include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
-#include "logging-android.h"
-
-using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
 
 sensor_combined_Publisher::sensor_combined_Publisher()
@@ -66,11 +62,12 @@ bool sensor_combined_Publisher::init(const std::string &ns, std::string topic_na
 {
 	// Create RTPSParticipant
 	ParticipantAttributes PParam;
-	PParam.domainId = 0;
+	//PParam.rtps.builtin.domainId = 0;
 	PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
 	std::string nodeName = ns;
 	nodeName.append("sensor_combined_publisher");
 	PParam.rtps.setName(nodeName.c_str());
+
 
 	mp_participant = Domain::createParticipant(PParam);
 
@@ -114,11 +111,11 @@ void sensor_combined_Publisher::PubListener::onPublicationMatched(Publisher *pub
 	if (is_different_endpoint) {
 		if (info.status == MATCHED_MATCHING) {
 			n_matched++;
-			LOGD("[[   micrortps_agent   ]\tsensor_combined publisher matched");
+			std::cout << "\033[0;37m[   micrortps_agent   ]\tsensor_combined publisher matched\033[0m" << std::endl;
 
 		} else {
 			n_matched--;
-			LOGD("[[   micrortps_agent   ]\tsensor_combined publisher unmatched");
+			std::cout << "\033[0;37m[   micrortps_agent   ]\tsensor_combined publisher unmatched\033[0m" << std::endl;
 		}
 	}
 }

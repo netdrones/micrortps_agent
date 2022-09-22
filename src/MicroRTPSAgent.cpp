@@ -120,7 +120,7 @@ bool MicroRTPSAgent::Start() {
     executor_thread_ = std::thread([this] {
         executor_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
         executor_->add_node(topics_);
-        while (running_.test(std::memory_order_relaxed)) {
+        while (running_.test(std::memory_order_acquire)) {
             executor_->spin_some();
         }
     });

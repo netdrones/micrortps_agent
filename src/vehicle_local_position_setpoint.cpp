@@ -35,27 +35,27 @@ using namespace eprosima::fastcdr::exception;
 
 vehicle_local_position_setpoint::vehicle_local_position_setpoint()
 {
-    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1dd02175
+    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@710c2b53
     m_timestamp_ = 0;
-    // m_x_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@31206beb
+    // m_x_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@5386659f
     m_x_ = 0.0;
-    // m_y_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3e77a1ed
+    // m_y_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@14028087
     m_y_ = 0.0;
-    // m_z_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3ffcd140
+    // m_z_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@cecf639
     m_z_ = 0.0;
-    // m_vx_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@23bb8443
+    // m_vx_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1caa0244
     m_vx_ = 0.0;
-    // m_vy_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1176dcec
+    // m_vy_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@7ce026d3
     m_vy_ = 0.0;
-    // m_vz_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@120d6fe6
+    // m_vz_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@7ce69770
     m_vz_ = 0.0;
-    // m_acceleration com.eprosima.idl.parser.typecode.AliasTypeCode@4ba2ca36
+    // m_acceleration com.eprosima.idl.parser.typecode.AliasTypeCode@1750fbeb
     memset(&m_acceleration, 0, (3) * 4);
-    // m_thrust com.eprosima.idl.parser.typecode.AliasTypeCode@4ba2ca36
+    // m_thrust com.eprosima.idl.parser.typecode.AliasTypeCode@1750fbeb
     memset(&m_thrust, 0, (3) * 4);
-    // m_yaw_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3444d69d
+    // m_yaw_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@5b247367
     m_yaw_ = 0.0;
-    // m_yawspeed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@1372ed45
+    // m_yawspeed_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@268f106e
     m_yawspeed_ = 0.0;
 
 }

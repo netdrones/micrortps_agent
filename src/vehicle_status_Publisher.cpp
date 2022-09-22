@@ -46,10 +46,6 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/attributes/PublisherAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
-#include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
-#include "logging-android.h"
-
-using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
 
 vehicle_status_Publisher::vehicle_status_Publisher()
@@ -66,7 +62,7 @@ bool vehicle_status_Publisher::init(const std::string &ns, std::string topic_nam
 {
 	// Create RTPSParticipant
 	ParticipantAttributes PParam;
-	PParam.domainId = 0;
+	//PParam.rtps.builtin.domainId = 0;
 	PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
 	std::string nodeName = ns;
 	nodeName.append("vehicle_status_publisher");
@@ -115,11 +111,11 @@ void vehicle_status_Publisher::PubListener::onPublicationMatched(Publisher *pub,
 	if (is_different_endpoint) {
 		if (info.status == MATCHED_MATCHING) {
 			n_matched++;
-			LOGD("[[   micrortps_agent   ]\tvehicle_status publisher matched");
+			std::cout << "\033[0;37m[   micrortps_agent   ]\tvehicle_status publisher matched\033[0m" << std::endl;
 
 		} else {
 			n_matched--;
-			LOGD("[[   micrortps_agent   ]\tvehicle_status publisher unmatched");
+			std::cout << "\033[0;37m[   micrortps_agent   ]\tvehicle_status publisher unmatched\033[0m" << std::endl;
 		}
 	}
 }

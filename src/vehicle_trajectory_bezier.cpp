@@ -42,11 +42,11 @@ using namespace eprosima::fastcdr::exception;
 
 vehicle_trajectory_bezier::vehicle_trajectory_bezier()
 {
-    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3c419631
+    // m_timestamp_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@5745ca0e
     m_timestamp_ = 0;
-    // m_control_points com.eprosima.idl.parser.typecode.AliasTypeCode@418e7838
+    // m_control_points com.eprosima.idl.parser.typecode.AliasTypeCode@3ad83a66
 
-    // m_bezier_order_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@61230f6a
+    // m_bezier_order_ com.eprosima.idl.parser.typecode.PrimitiveTypeCode@3cce5371
     m_bezier_order_ = 0;
 
 }

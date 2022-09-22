@@ -70,7 +70,6 @@ const uint8_t position_setpoint__SETPOINT_TYPE_LOITER = 2;
 const uint8_t position_setpoint__SETPOINT_TYPE_TAKEOFF = 3;
 const uint8_t position_setpoint__SETPOINT_TYPE_LAND = 4;
 const uint8_t position_setpoint__SETPOINT_TYPE_IDLE = 5;
-const uint8_t position_setpoint__SETPOINT_TYPE_FOLLOW_TARGET = 6;
 const uint8_t position_setpoint__VELOCITY_FRAME_LOCAL_NED = 1;
 const uint8_t position_setpoint__VELOCITY_FRAME_BODY_NED = 8;
 /*!
@@ -404,24 +403,6 @@ public:
     eProsima_user_DllExport bool& yawspeed_valid_();
 
     /*!
-     * @brief This function sets a value in member landing_gear_
-     * @param _landing_gear_ New value for member landing_gear_
-     */
-    eProsima_user_DllExport void landing_gear_(uint8_t _landing_gear_);
-
-    /*!
-     * @brief This function returns the value of member landing_gear_
-     * @return Value of member landing_gear_
-     */
-    eProsima_user_DllExport uint8_t landing_gear_() const;
-
-    /*!
-     * @brief This function returns a reference to member landing_gear_
-     * @return Reference to member landing_gear_
-     */
-    eProsima_user_DllExport uint8_t& landing_gear_();
-
-    /*!
      * @brief This function sets a value in member loiter_radius_
      * @param _loiter_radius_ New value for member loiter_radius_
      */
@@ -492,6 +473,24 @@ public:
      * @return Reference to member cruising_speed_
      */
     eProsima_user_DllExport float& cruising_speed_();
+
+    /*!
+     * @brief This function sets a value in member gliding_enabled_
+     * @param _gliding_enabled_ New value for member gliding_enabled_
+     */
+    eProsima_user_DllExport void gliding_enabled_(bool _gliding_enabled_);
+
+    /*!
+     * @brief This function returns the value of member gliding_enabled_
+     * @return Value of member gliding_enabled_
+     */
+    eProsima_user_DllExport bool gliding_enabled_() const;
+
+    /*!
+     * @brief This function returns a reference to member gliding_enabled_
+     * @return Reference to member gliding_enabled_
+     */
+    eProsima_user_DllExport bool& gliding_enabled_();
 
     /*!
      * @brief This function sets a value in member cruising_throttle_
@@ -597,11 +596,11 @@ private:
     bool m_yaw_valid_;
     float m_yawspeed_;
     bool m_yawspeed_valid_;
-    uint8_t m_landing_gear_;
     float m_loiter_radius_;
     uint8_t m_loiter_direction_;
     float m_acceptance_radius_;
     float m_cruising_speed_;
+    bool m_gliding_enabled_;
     float m_cruising_throttle_;
     bool m_disable_weather_vane_;
 };

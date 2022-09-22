@@ -46,9 +46,6 @@
 #include <fastrtps/subscriber/Subscriber.h>
 #include <fastrtps/attributes/SubscriberAttributes.h>
 #include <fastrtps/transport/UDPv4TransportDescriptor.h>
-#include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
-
-using SharedMemTransportDescriptor = eprosima::fastdds::rtps::SharedMemTransportDescriptor;
 
 
 vehicle_local_position_setpoint_Subscriber::vehicle_local_position_setpoint_Subscriber()
@@ -72,7 +69,7 @@ bool vehicle_local_position_setpoint_Subscriber::init(uint8_t topic_ID, std::con
 
 	// Create RTPSParticipant
 	ParticipantAttributes PParam;
-	PParam.domainId = 0;
+	//PParam.rtps.builtin.domainId = 0;
 	PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
 	std::string nodeName = ns;
 	nodeName.append("vehicle_local_position_setpoint_subscriber");

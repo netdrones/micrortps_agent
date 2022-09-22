@@ -39,16 +39,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-typedef std::array<float, 21> vehicle_mocap_odometry__float_array_21;
+typedef std::array<float, 3> vehicle_mocap_odometry__float_array_3;
 typedef std::array<float, 4> vehicle_mocap_odometry__float_array_4;
 /*!
  * @brief This class represents the TopicDataType of the type vehicle_mocap_odometry defined by the user in the IDL file.
