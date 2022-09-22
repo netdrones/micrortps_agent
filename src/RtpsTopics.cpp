@@ -725,7 +725,6 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 {
 	switch (topic_ID) {
 
-#if 0
 	case 10: { // timesync publisher
 		timesync_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
@@ -753,7 +752,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 #endif // ROS_BRIDGE
 	}
 	break;
-#endif
+
 	case 11: { // trajectory_waypoint publisher
 		trajectory_waypoint_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
@@ -813,7 +812,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 16: { // vehicle_odometry publisher
+	case 18: { // vehicle_odometry publisher
 		vehicle_odometry_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -850,7 +849,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 19: { // vehicle_status publisher
+	case 21: { // vehicle_status publisher
 		// TODO(rakuto): VehicleStatus.msg has been updated recently. Need to regenerate code.
 #if 0
 		vehicle_status_msg_t st;
@@ -903,7 +902,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 22: { // collision_constraints publisher
+	case 24: { // collision_constraints publisher
 		collision_constraints_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -925,7 +924,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 26: { // timesync_status publisher
+	case 28: { // timesync_status publisher
 		timesync_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -950,7 +949,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 27: { // sensor_combined publisher
+	case 29: { // sensor_combined publisher
 		sensor_combined_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -978,7 +977,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 21: { // vehicle_trajectory_waypoint_desired publisher
+	case 23: { // vehicle_trajectory_waypoint_desired publisher
 		vehicle_trajectory_waypoint_desired_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -1030,6 +1029,8 @@ void RtpsTopics::sync_timestamp_of_outgoing_data(T &msg) {
 bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 {
 	bool ret = false;
+
+	LOGD("getMsg: %d", topic_ID);
 
 	switch (topic_ID) {
 
@@ -1198,7 +1199,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 6: { // optical_flow subscriber
+	case 6: { // sensor_optical_flow subscriber
 #ifdef ROS_BRIDGE
 // TODO: OpticalFlow.msg does not exist in latest px4_msg
 # if 0
@@ -1360,6 +1361,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
             msg.seq_(m->seq);
             msg.tc1_(m->tc1);
             msg.ts1_(m->ts1);
+			LOGD("Timesync: tc1=%ld ts1=%ld", m->tc1, m->ts1);
 
             timesync_.reset();
             cv_timesync_.notify_one();
@@ -1495,7 +1497,15 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 20: { // vehicle_trajectory_waypoint subscriber
+	case 16: { // vehicle_attitude_setpoint subscriber
+		// TODO: vehicle_attitude_setpoint
+		break;
+	}
+	case 17: { // trajectory_setpoint subscriber
+		// TODO: trajectory_setpoint_subscriber
+		break;
+	}
+	case 22: { // vehicle_trajectory_waypoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_trajectory_waypoint_);
 		if (auto m = vehicle_trajectory_waypoint_.get()) {
@@ -1534,7 +1544,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 23: { // onboard_computer_status subscriber
+	case 25: { // onboard_computer_status subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_onboard_computer_status_);
 		if (auto m = onboard_computer_status_.get()) {
@@ -1583,7 +1593,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 24: { // trajectory_bezier subscriber
+	case 26: { // trajectory_bezier subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_trajectory_bezier_);
 		if (auto m = trajectory_bezier_.get()) {
@@ -1614,7 +1624,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 25: { // vehicle_trajectory_bezier subscriber
+	case 27: { // vehicle_trajectory_bezier subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_trajectory_bezier_);
 		if (auto m = vehicle_trajectory_bezier_.get()) {
@@ -1649,7 +1659,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 17: { // vehicle_mocap_odometry subscriber
+	case 19: { // vehicle_mocap_odometry subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_mocap_odometry_);
 		if (auto m = vehicle_mocap_odometry_.get()) {
@@ -1694,7 +1704,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 18: { // vehicle_visual_odometry subscriber
+	case 20: { // vehicle_visual_odometry subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_visual_odometry_);
 		if (auto m = vehicle_visual_odometry_.get()) {

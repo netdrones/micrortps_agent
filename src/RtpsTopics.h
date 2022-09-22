@@ -153,10 +153,8 @@ public:
 private:
 	/** Publishers **/
 #ifdef ROS_BRIDGE
-# if 0
 	rclcpp::Publisher<px4_msgs::msg::Timesync>::SharedPtr timesync_pub_;
 	rclcpp::Publisher<px4_msgs::msg::Timesync>::SharedPtr timesync_fmu_in_pub_;
-# endif
 	rclcpp::Publisher<px4_msgs::msg::TrajectoryWaypoint>::SharedPtr trajectory_waypoint_pub_;
 	rclcpp::Publisher<px4_msgs::msg::VehicleControlMode>::SharedPtr vehicle_control_mode_pub_;
 	rclcpp::Publisher<px4_msgs::msg::VehicleOdometry>::SharedPtr vehicle_odometry_pub_;
@@ -191,9 +189,7 @@ private:
 	rclcpp::Subscription<px4_msgs::msg::PositionSetpoint>::SharedPtr position_setpoint_sub_;
 	rclcpp::Subscription<px4_msgs::msg::PositionSetpointTriplet>::SharedPtr position_setpoint_triplet_sub_;
 	rclcpp::Subscription<px4_msgs::msg::TelemetryStatus>::SharedPtr telemetry_status_sub_;
-#if 0
 	rclcpp::Subscription<px4_msgs::msg::Timesync>::SharedPtr timesync_sub_;
-#endif
 	rclcpp::Subscription<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_sub_;
 	rclcpp::Subscription<px4_msgs::msg::VehicleLocalPositionSetpoint>::SharedPtr vehicle_local_position_setpoint_sub_;
 	rclcpp::Subscription<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_sub_;
