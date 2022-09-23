@@ -262,6 +262,11 @@ private:
 							cv_vehicle_mocap_odometry_,
 							cv_vehicle_visual_odometry_;
 
+	// Set by RtpsTopic
+	std::condition_variable* send_queue_cv_ = nullptr;
+	std::mutex* send_queue_mutex_ = nullptr;
+	std::queue<uint8_t>* send_queue_ = nullptr;
+
 	// Keep only one message
 //	px4_msgs::msg::DebugArray::SharedPtr debug_array_;
 //	px4_msgs::msg::DebugVect::UniquePtr debug_vect_;

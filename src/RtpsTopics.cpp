@@ -34,6 +34,32 @@
 #include "RtpsTopics.h"
 #include "logging-android.h"
 
+static const int TOPIC_ID_OFFBOARD_CONTROL_MODE = 5;
+//static const int TOPIC_ID_SENSOR_OPTICAL_FLOW = 6;
+static const int TOPIC_ID_POSITION_SETPOINT = 7;
+static const int TOPIC_ID_POSITION_SETPOINT_TRIPLET = 8;
+static const int TOPIC_ID_TELEMETRY_STATUS = 9;
+static const int TOPIC_ID_TIMESYNC = 10;
+static const int TOPIC_ID_TRAJECTORY_WAYPOINT = 11;
+static const int TOPIC_ID_VEHICLE_COMMAND = 12;
+static const int TOPIC_ID_VEHICLE_CONTROL_MODE = 13;
+static const int TOPIC_ID_VEHICLE_LOCAL_POSITION_SETPOINT = 14;
+static const int TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT = 15;
+static const int TOPIC_ID_VEHICLE_RATES_SETPOINT = 16;
+static const int TOPIC_ID_TRAJECTORY_SETPOINT = 17;
+static const int TOPIC_ID_VEHICLE_ODOMETRY = 18;
+static const int TOPIC_ID_VEHICLE_MOCAP_ODOMETRY = 19;
+static const int TOPIC_ID_VEHICLE_VISUAL_ODOMETRY = 20;
+static const int TOPIC_ID_VEHICLE_STATUS = 21;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT = 22;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT_DESIRED = 23;
+static const int TOPIC_ID_COLLISION_CONSTRAINTS = 24;
+static const int TOPIC_ID_ONBOARD_COMPUTER_STATUS = 25;
+static const int TOPIC_ID_TRAJECTORY_BEZIER = 26;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_BEZIER = 27;
+static const int TOPIC_ID_TIMESYNC_STATUS = 28;
+static const int TOPIC_ID_SENSOR_COMBINED = 29;
+
 #ifdef ROS_BRIDGE
 
 #include <chrono>
@@ -86,12 +112,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	LOGD("---   Subscribers   ---");
 #else
 	std::cout << "\033[0;36m---   Subscribers   ---\033[0m" << std::endl;
-#endif // ANDROID
+#endif // __ANDROID__
 
 #ifdef ROS_BRIDGE
-	RCL_UNUSED(t_send_queue_mutex);
-	RCL_UNUSED(t_send_queue_cv);
-	RCL_UNUSED(t_send_queue);
+	send_queue_mutex_ = t_send_queue_mutex;
+	send_queue_cv_ = t_send_queue_cv;
+	send_queue_ = t_send_queue;
 
 	auto sub_opt = rclcpp::SubscriptionOptions();
 	sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -150,37 +176,36 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	RCL_UNUSED(debug_vect_sub_);
 #endif // if 0
 
-#if 0
 	LOGD("- offboard_control_mode subscriber started");
 	offboard_control_mode_sub_ = this->create_subscription<OffboardControlMode>(
 		ns + "fmu/offboard_control_mode/in",
 		10,
 		[this](OffboardControlMode::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_offboard_control_mode_);
-			this->cv_offboard_control_mode_.wait(lk, [this] { return !this->offboard_control_mode_.get(); });
-			this->offboard_control_mode_ = std::move(msg);
+			cv_offboard_control_mode_.wait(lk, [this] { return !this->offboard_control_mode_.get(); });
+			offboard_control_mode_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_OFFBOARD_CONTROL_MODE);
+			send_queue_cv_->notify_one();
 		},
 		sub_opt
 	);
 	RCL_UNUSED(offboard_control_mode_sub_);
-#endif
 
-#if 0
-	LOGD("- optical_flow subscriber started");
-	optical_flow_sub_ = this->create_subscription<OpticalFlow>(
-		ns + "fmu/optical_flow/in",
-		10,
-		[this](OpticalFlow::UniquePtr msg) {
-			std::unique_lock lk(this->mtx_optical_flow_);
-			this->cv_optical_flow_.wait(lk, [this] { return !this->optical_flow_.get(); });
-			this->optical_flow_ = std::move(msg);
-		},
-		sub_opt
-	);
-	RCL_UNUSED(optical_flow_sub_);
-
-	auto sub2_opt = rclcpp::SubscriptionOptions();
-	sub2_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+//	LOGD("- optical_flow subscriber started");
+//	optical_flow_sub_ = this->create_subscription<OpticalFlow>(
+//		ns + "fmu/optical_flow/in",
+//		10,
+//		[this](OpticalFlow::UniquePtr msg) {
+//			std::unique_lock lk(this->mtx_optical_flow_);
+//			this->cv_optical_flow_.wait(lk, [this] { return !this->optical_flow_.get(); });
+//			this->optical_flow_ = std::move(msg);
+//		},
+//		sub_opt
+//	);
+//	RCL_UNUSED(optical_flow_sub_);
 
 	LOGD("- position_setpoint subscriber started");
 	position_setpoint_sub_ = this->create_subscription<PositionSetpoint>(
@@ -188,15 +213,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](PositionSetpoint::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_position_setpoint_);
-			this->cv_position_setpoint_.wait(lk, [this] { return !this->position_setpoint_.get(); });
-			this->position_setpoint_ = std::move(msg);
+			cv_position_setpoint_.wait(lk, [this] { return !this->position_setpoint_.get(); });
+			position_setpoint_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_POSITION_SETPOINT);
+			send_queue_cv_->notify_one();
 		},
-		sub2_opt
+		sub_opt
 	);
 	RCL_UNUSED(position_setpoint_sub_);
-
-	auto sub3_opt = rclcpp::SubscriptionOptions();
-	sub3_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- position_setpoint_triplet subscriber started");
 	position_setpoint_triplet_sub_ = this->create_subscription<PositionSetpointTriplet>(
@@ -204,15 +231,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](PositionSetpointTriplet::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_position_setpoint_triplet_);
-			this->cv_position_setpoint_triplet_.wait(lk, [this] { return !this->position_setpoint_triplet_.get(); });
-			this->position_setpoint_triplet_ = std::move(msg);
+			cv_position_setpoint_triplet_.wait(lk, [this] { return !this->position_setpoint_triplet_.get(); });
+			position_setpoint_triplet_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_POSITION_SETPOINT_TRIPLET);
+			send_queue_cv_->notify_one();
 		},
-		sub3_opt
+		sub_opt
 	);
 	RCL_UNUSED(position_setpoint_triplet_sub_);
-
-	auto sub4_opt = rclcpp::SubscriptionOptions();
-	sub4_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- telemetry_status subscriber started");
 	telemetry_status_sub_ = this->create_subscription<TelemetryStatus>(
@@ -222,11 +251,18 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			std::unique_lock lk(this->mtx_telemetry_status_);
 			this->cv_telemetry_status_.wait(lk, [this] { return !this->telemetry_status_.get(); });
 			this->telemetry_status_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_TELEMETRY_STATUS);
+			send_queue_cv_->notify_one();
 		},
-		sub4_opt
+		sub_opt
 	);
 	RCL_UNUSED(telemetry_status_sub_);
-#endif
+
+//	auto sub_opt_timesync = rclcpp::SubscriptionOptions();
+//	sub_opt_timesync.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- timesync subscriber started");
 	timesync_sub_ = this->create_subscription<Timesync>(
@@ -234,15 +270,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](Timesync::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_timesync_);
-			this->cv_timesync_.wait(lk, [this] { return !this->timesync_.get(); });
-			this->timesync_ = std::move(msg);
-		}
-//		sub_opt
+//			cv_timesync_.wait(lk, [this] { return !this->timesync_.get(); });
+			timesync_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_TIMESYNC);
+			send_queue_cv_->notify_one();
+		},
+		sub_opt
 	);
 	RCL_UNUSED(timesync_sub_);
-
-	auto sub5_opt = rclcpp::SubscriptionOptions();
-	sub5_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_command subscriber started");
 	vehicle_command_sub_ = this->create_subscription<VehicleCommand>(
@@ -250,15 +288,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](VehicleCommand::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_vehicle_command_);
-			this->cv_vehicle_command_.wait(lk, [this] { return !this->vehicle_command_.get(); });
-			this->vehicle_command_ = std::move(msg);
+			cv_vehicle_command_.wait(lk, [this] { return !this->vehicle_command_.get(); });
+			vehicle_command_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_VEHICLE_COMMAND);
+			send_queue_cv_->notify_one();
 		},
-		sub5_opt
+		sub_opt
 	);
 	RCL_UNUSED(vehicle_command_sub_);
-
-	auto sub6_opt = rclcpp::SubscriptionOptions();
-	sub6_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_local_position_setpoint subscriber started");
 	vehicle_local_position_setpoint_sub_ = this->create_subscription<VehicleLocalPositionSetpoint>(
@@ -266,15 +306,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](VehicleLocalPositionSetpoint::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_vehicle_local_position_setpoint_);
-			this->cv_vehicle_local_position_setpoint_.wait(lk, [this] { return !this->vehicle_local_position_setpoint_.get(); });
-			this->vehicle_local_position_setpoint_ = std::move(msg);
+			cv_vehicle_local_position_setpoint_.wait(lk, [this] { return !this->vehicle_local_position_setpoint_.get(); });
+			vehicle_local_position_setpoint_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_VEHICLE_LOCAL_POSITION_SETPOINT);
+			send_queue_cv_->notify_one();
 		},
-		sub6_opt
+		sub_opt
 	);
 	RCL_UNUSED(vehicle_local_position_setpoint_sub_);
-
-	auto sub7_opt = rclcpp::SubscriptionOptions();
-	sub7_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- trajectory_setpoint subscriber started");
 	trajectory_setpoint_sub_ = this->create_subscription<TrajectorySetpoint>(
@@ -282,15 +324,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](TrajectorySetpoint::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_trajectory_setpoint_);
-			this->cv_trajectory_setpoint_.wait(lk, [this] { return !this->trajectory_setpoint_.get(); });
-			this->trajectory_setpoint_ = std::move(msg);
+			cv_trajectory_setpoint_.wait(lk, [this] { return !this->trajectory_setpoint_.get(); });
+			trajectory_setpoint_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_TRAJECTORY_SETPOINT);
+			send_queue_cv_->notify_one();
 		},
-		sub7_opt
+		sub_opt
 	);
 	RCL_UNUSED(trajectory_setpoint_sub_);
-
-	auto sub8_opt = rclcpp::SubscriptionOptions();
-	sub8_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_trajectory_waypoint subscriber started");
 	vehicle_trajectory_waypoint_sub_ = this->create_subscription<VehicleTrajectoryWaypoint>(
@@ -300,13 +344,15 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 			std::unique_lock lk(this->mtx_vehicle_trajectory_waypoint_);
 			this->cv_vehicle_trajectory_waypoint_.wait(lk, [this] { return !this->vehicle_trajectory_waypoint_.get(); });
 			this->vehicle_trajectory_waypoint_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT);
+			send_queue_cv_->notify_one();
 		},
-		sub8_opt
+		sub_opt
 	);
 	RCL_UNUSED(vehicle_trajectory_waypoint_sub_);
-
-	auto sub9_opt = rclcpp::SubscriptionOptions();
-	sub9_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- onboard_computer_status subscriber started");
 	onboard_computer_status_sub_ = this->create_subscription<OnboardComputerStatus>(
@@ -314,15 +360,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](OnboardComputerStatus::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_onboard_computer_status_);
-			this->cv_onboard_computer_status_.wait(lk, [this] { return !this->onboard_computer_status_.get(); });
-			this->onboard_computer_status_ = std::move(msg);
+			cv_onboard_computer_status_.wait(lk, [this] { return !this->onboard_computer_status_.get(); });
+			onboard_computer_status_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_ONBOARD_COMPUTER_STATUS);
+			send_queue_cv_->notify_one();
 		},
-		sub9_opt
+		sub_opt
 	);
 	RCL_UNUSED(onboard_computer_status_sub_);
-
-	auto sub10_opt = rclcpp::SubscriptionOptions();
-	sub10_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- trajectory_bezier subscriber started");
 	trajectory_bezier_sub_ = this->create_subscription<TrajectoryBezier>(
@@ -330,15 +378,17 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](TrajectoryBezier::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_trajectory_bezier_);
-			this->cv_trajectory_bezier_.wait(lk, [this] { return !this->trajectory_bezier_.get(); });
-			this->trajectory_bezier_ = std::move(msg);
+			cv_trajectory_bezier_.wait(lk, [this] { return !this->trajectory_bezier_.get(); });
+			trajectory_bezier_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_TRAJECTORY_BEZIER);
+			send_queue_cv_->notify_one();
 		},
-		sub10_opt
+		sub_opt
 	);
 	RCL_UNUSED(trajectory_bezier_sub_);
-
-	auto sub11_opt = rclcpp::SubscriptionOptions();
-	sub11_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 	LOGD("- vehicle_trajectory_bezier subscriber started");
 	vehicle_trajectory_bezier_sub_ = this->create_subscription<VehicleTrajectoryBezier>(
@@ -346,10 +396,15 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 		10,
 		[this](VehicleTrajectoryBezier::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_vehicle_trajectory_bezier_);
-			this->cv_vehicle_trajectory_bezier_.wait(lk, [this] { return !this->vehicle_trajectory_bezier_.get(); });
-			this->vehicle_trajectory_bezier_ = std::move(msg);
+			cv_vehicle_trajectory_bezier_.wait(lk, [this] { return !this->vehicle_trajectory_bezier_.get(); });
+			vehicle_trajectory_bezier_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_VEHICLE_TRAJECTORY_BEZIER);
+			send_queue_cv_->notify_one();
 		},
-		sub11_opt
+		sub_opt
 	);
 	RCL_UNUSED(vehicle_trajectory_bezier_sub_);
 
@@ -368,19 +423,21 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	RCL_UNUSED(vehicle_mocap_odometry_sub_);
 #endif
 
-	auto sub12_opt = rclcpp::SubscriptionOptions();
-	sub12_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
 	LOGD("- vehicle_visual_odometry subscriber started");
 	vehicle_visual_odometry_sub_ = this->create_subscription<VehicleVisualOdometry>(
 		ns + "fmu/vehicle_visual_odometry/in",
 		10,
 		[this](VehicleVisualOdometry::UniquePtr msg) {
 			std::unique_lock lk(this->mtx_vehicle_visual_odometry_);
-			this->cv_vehicle_visual_odometry_.wait(lk, [this] { return !this->vehicle_visual_odometry_.get(); });
-			this->vehicle_visual_odometry_ = std::move(msg);
+			cv_vehicle_visual_odometry_.wait(lk, [this] { return !this->vehicle_visual_odometry_.get(); });
+			vehicle_visual_odometry_ = std::move(msg);
+			lk.unlock();
+
+			std::unique_lock lk2(*send_queue_mutex_);
+			send_queue_->push(TOPIC_ID_VEHICLE_VISUAL_ODOMETRY);
+			send_queue_cv_->notify_one();
 		},
-		sub12_opt
+		sub_opt
 	);
 	RCL_UNUSED(vehicle_visual_odometry_sub_);
 
@@ -456,14 +513,12 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	}
 
 
-#if 0
 	if (_timesync_sub.init(10, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
 		LOGD("- timesync subscriber started");
 	} else {
 		LOGE("Failed starting timesync subscriber");
 		return false;
 	}
-#endif
 
 	if (_vehicle_command_sub.init(12, t_send_queue_cv, t_send_queue_mutex, t_send_queue, ns)) {
 		LOGD("- vehicle_command subscriber started");
@@ -545,38 +600,33 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 
 	// Initialise publishers
 	std::cout << "\033[0;36m----   Publishers  ----\033[0m" << std::endl;
-#endif // ANDROID
+#endif // __ANDROID__
 
 #ifdef ROS_BRIDGE
 	// See also microRTPS_timesync.cpp
-	timesync_timer_ = this->create_wall_timer(500ms, [this]{
-		auto timesync = this->_timesync->newTimesyncMsg();
+	timesync_timer_ = this->create_wall_timer(100ms, [this]{
+		auto timesync_msg = _timesync->newTimesyncMsg();
+		timesync_fmu_in_pub_->publish(timesync_msg);
 
-		Timesync msg;
-		msg.timestamp = timesync.timestamp_();
-		msg.seq = timesync.seq_();
-		msg.tc1 = timesync.tc1_();
-		msg.ts1 = timesync.ts1_();
-
-		LOGD("Send Timesync: %ld %ld", msg.tc1, msg.ts1);
-		this->timesync_fmu_in_pub_->publish(msg);
+		auto status_msg = _timesync->newTimesyncStatusMsg();
+		timesync_status_pub_->publish(status_msg);
 	});
 	RCL_UNUSED(timesync_timer_);
 
 	LOGD("- timesync publishers started");
 	timesync_pub_ = this->create_publisher<Timesync>(
 		ns + "fmu/timesync/out",
-		10
+		rclcpp::QoS(1)
 	);
 	timesync_fmu_in_pub_ = this->create_publisher<Timesync>(
 		ns + "fmu/timesync/in",
-		10
+		rclcpp::QoS(1)
 	);
 
 	LOGD("- trajectory_waypoint publisher started");
 	trajectory_waypoint_pub_ = this->create_publisher<TrajectoryWaypoint>(
 		ns + "fmu/trajectory_waypoint/out",
-		10
+		rclcpp::QoS(10)
 	);
 
 	LOGD("- vehicle_control_mode publisher started");
@@ -606,19 +656,19 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	LOGD("- timesync_status publisher started");
 	timesync_status_pub_ = this->create_publisher<TimesyncStatus>(
 		ns + "fmu/timesync_status/out",
-		10
+		rclcpp::QoS(1)
 	);
 
 	LOGD("- sensor_combined publisher started");
 	sensor_combined_pub_ = this->create_publisher<SensorCombined>(
 		ns + "fmu/sensor_combined/out",
-		10
+	rclcpp::QoS(10)
 	);
 
 	LOGD("- vehicle_trajectory_waypoint_desired publisher started");
 	vehicle_trajectory_waypoint_desired_pub_ = this->create_publisher<VehicleTrajectoryWaypointDesired>(
 		ns + "fmu/vehicle_trajectory_waypoint_desired/out",
-		10
+		rclcpp::QoS(10)
 	);
 
 #else
@@ -720,11 +770,12 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 {
 	switch (topic_ID) {
 
-	case 10: { // timesync publisher
+	case TOPIC_ID_TIMESYNC: { // timesync publisher
 		timesync_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
 		st.deserialize(cdr_des);
+
 #ifdef ROS_BRIDGE
 		_timesync->processTimesyncMsg(&st, timesync_pub_);
 #else
@@ -747,7 +798,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 11: { // trajectory_waypoint publisher
+	case TOPIC_ID_TRAJECTORY_WAYPOINT: { // trajectory_waypoint publisher
 		trajectory_waypoint_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -773,7 +824,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 13: { // vehicle_control_mode publisher
+	case TOPIC_ID_VEHICLE_CONTROL_MODE: { // vehicle_control_mode publisher
 		vehicle_control_mode_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -806,7 +857,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 18: { // vehicle_odometry publisher
+	case TOPIC_ID_VEHICLE_ODOMETRY: { // vehicle_odometry publisher
 		vehicle_odometry_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -837,7 +888,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 21: { // vehicle_status publisher
+	case TOPIC_ID_VEHICLE_STATUS: { // vehicle_status publisher
 		vehicle_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -891,7 +942,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 24: { // collision_constraints publisher
+	case TOPIC_ID_COLLISION_CONSTRAINTS: { // collision_constraints publisher
 		collision_constraints_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -913,7 +964,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 28: { // timesync_status publisher
+	case TOPIC_ID_TIMESYNC_STATUS: { // timesync_status publisher
 		timesync_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -938,7 +989,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 29: { // sensor_combined publisher
+	case TOPIC_ID_SENSOR_COMBINED: { // sensor_combined publisher
 		sensor_combined_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -965,7 +1016,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	}
 	break;
 
-	case 23: { // vehicle_trajectory_waypoint_desired publisher
+	case TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT_DESIRED: { // vehicle_trajectory_waypoint_desired publisher
 		vehicle_trajectory_waypoint_desired_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -1151,7 +1202,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 5: { // offboard_control_mode subscriber
+	case TOPIC_ID_OFFBOARD_CONTROL_MODE: { // offboard_control_mode subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_offboard_control_mode_);
 		if (auto m = offboard_control_mode_.get()) {
@@ -1214,7 +1265,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 7: { // position_setpoint subscriber
+	case TOPIC_ID_POSITION_SETPOINT: { // position_setpoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_position_setpoint_);
 		if (auto m = position_setpoint_.get()) {
@@ -1242,7 +1293,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 8: { // position_setpoint_triplet subscriber
+	case TOPIC_ID_POSITION_SETPOINT_TRIPLET: { // position_setpoint_triplet subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_position_setpoint_triplet_);
 		if (auto m = position_setpoint_triplet_.get()) {
@@ -1273,7 +1324,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 9: { // telemetry_status subscriber
+	case TOPIC_ID_TELEMETRY_STATUS: { // telemetry_status subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_telemetry_status_);
 		if (auto m = telemetry_status_.get()) {
@@ -1337,7 +1388,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 10: { // timesync subscriber
+	case TOPIC_ID_TIMESYNC: { // timesync subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_timesync_);
 		if (auto m = timesync_.get()) {
@@ -1347,7 +1398,6 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
             msg.seq_(m->seq);
             msg.tc1_(m->tc1);
             msg.ts1_(m->ts1);
-			LOGD("Timesync: tc1=%ld ts1=%ld", m->tc1, m->ts1);
 
             timesync_.reset();
             cv_timesync_.notify_one();
@@ -1369,7 +1419,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 12: { // vehicle_command subscriber
+	case TOPIC_ID_VEHICLE_COMMAND: { // vehicle_command subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_command_);
 		if (auto m = vehicle_command_.get()) {
@@ -1411,7 +1461,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 14: { // vehicle_local_position_setpoint subscriber
+	case TOPIC_ID_VEHICLE_LOCAL_POSITION_SETPOINT: { // vehicle_local_position_setpoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_local_position_setpoint_);
 		if (auto m = vehicle_local_position_setpoint_.get()) {
@@ -1449,7 +1499,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 15: { // trajectory_setpoint subscriber
+	case TOPIC_ID_TRAJECTORY_SETPOINT: { // trajectory_setpoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_trajectory_setpoint_);
 		if (auto m = trajectory_setpoint_.get()) {
@@ -1483,15 +1533,11 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 16: { // vehicle_attitude_setpoint subscriber
+	case TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT: { // vehicle_attitude_setpoint subscriber
 		// TODO: vehicle_attitude_setpoint
 		break;
 	}
-	case 17: { // trajectory_setpoint subscriber
-		// TODO: trajectory_setpoint_subscriber
-		break;
-	}
-	case 22: { // vehicle_trajectory_waypoint subscriber
+	case TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT: { // vehicle_trajectory_waypoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_trajectory_waypoint_);
 		if (auto m = vehicle_trajectory_waypoint_.get()) {
@@ -1530,7 +1576,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 25: { // onboard_computer_status subscriber
+	case TOPIC_ID_ONBOARD_COMPUTER_STATUS: { // onboard_computer_status subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_onboard_computer_status_);
 		if (auto m = onboard_computer_status_.get()) {
@@ -1579,7 +1625,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 26: { // trajectory_bezier subscriber
+	case TOPIC_ID_TRAJECTORY_BEZIER: { // trajectory_bezier subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_trajectory_bezier_);
 		if (auto m = trajectory_bezier_.get()) {
@@ -1610,7 +1656,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 27: { // vehicle_trajectory_bezier subscriber
+	case TOPIC_ID_VEHICLE_TRAJECTORY_BEZIER: { // vehicle_trajectory_bezier subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_trajectory_bezier_);
 		if (auto m = vehicle_trajectory_bezier_.get()) {
@@ -1645,39 +1691,31 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 19: { // vehicle_mocap_odometry subscriber
+	case TOPIC_ID_VEHICLE_MOCAP_ODOMETRY: { // vehicle_mocap_odometry subscriber
 #ifdef ROS_BRIDGE
-        // TODO: vehicle_mocap_odometry message was updated recently
-#if 0
 		std::unique_lock lk(mtx_vehicle_mocap_odometry_);
 		if (auto m = vehicle_mocap_odometry_.get()) {
             vehicle_mocap_odometry_msg_t msg;
             msg.timestamp_(m->timestamp);
             sync_timestamp_of_outgoing_data(msg);
             msg.timestamp_sample_(m->timestamp_sample);
-            msg.local_frame_(m->local_frame);
-            msg.x_(m->x);
-            msg.y_(m->y);
-            msg.z_(m->z);
+            msg.pose_frame_(m->pose_frame);
+			msg.position(m->position);
             msg.q(m->q);
-            msg.q_offset(m->q_offset);
-            msg.pose_covariance(m->pose_covariance);
             msg.velocity_frame_(m->velocity_frame);
-            msg.vx_(m->vx);
-            msg.vy_(m->vy);
-            msg.vz_(m->vz);
-            msg.rollspeed_(m->rollspeed);
-            msg.pitchspeed_(m->pitchspeed);
-            msg.yawspeed_(m->yawspeed);
-            msg.velocity_covariance(m->velocity_covariance);
+			msg.velocity(m->velocity);
+			msg.angular_velocity(m->angular_velocity);
+			msg.position_variance(m->position_variance);
+			msg.orientation_variance(m->orientation_variance);
+			msg.velocity_variance(m->velocity_variance);
             msg.reset_counter_(m->reset_counter);
+			msg.quality_(m->quality);
 
             vehicle_mocap_odometry_.reset();
             cv_vehicle_mocap_odometry_.notify_one();
             msg.serialize(scdr);
             ret = true;
         }
-#endif
 #else
         if (_vehicle_mocap_odometry_sub.hasMsg()) {
             vehicle_mocap_odometry_msg_t msg = _vehicle_mocap_odometry_sub.getMsg();
@@ -1693,7 +1731,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 20: { // vehicle_visual_odometry subscriber
+	case TOPIC_ID_VEHICLE_VISUAL_ODOMETRY: { // vehicle_visual_odometry subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_visual_odometry_);
 		if (auto m = vehicle_visual_odometry_.get()) {
@@ -1733,7 +1771,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 		break;
 	}
 	default:
-		LOGD("[[   micrortps_agent   ]\tUnexpected topic ID '%hhu' to getMsg. Please make sure the agent is capable of parsing the message associated to the topic ID '%hhu'\033[0m\n",
+		LOGW("[[   micrortps_agent   ]\tUnexpected topic ID '%hhu' to getMsg. Please make sure the agent is capable of parsing the message associated to the topic ID '%hhu'\033[0m\n",
 		       topic_ID, topic_ID);
 		break;
 	}

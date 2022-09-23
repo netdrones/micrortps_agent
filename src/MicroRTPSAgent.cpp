@@ -120,7 +120,7 @@ bool MicroRTPSAgent::Start() {
     executor_thread_ = std::thread([this] {
         executor_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
         executor_->add_node(topics_);
-        while (running_.test(std::memory_order_acquire)) {
+        while (running_.test_and_set()) {
             executor_->spin_some();
         }
     });
@@ -166,8 +166,6 @@ void MicroRTPSAgent::PollSerial() {
         auto len = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
         if (len > 0) {
             topics_->publish(topic_id, buffer, sizeof(buffer));
-        } else if (len < 0) {
-            break;
         }
     }
     topics_.reset();

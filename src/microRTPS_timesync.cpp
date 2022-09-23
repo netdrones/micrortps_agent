@@ -56,6 +56,7 @@ TimeSync::~TimeSync() { stop(); }
 
 void TimeSync::start(TimesyncPublisher *pub)
 {
+#ifndef ROS_BRIDGE
 	stop();
 
 
@@ -70,10 +71,12 @@ void TimeSync::start(TimesyncPublisher *pub)
 	};
 	_request_stop = false;
 	_send_timesync_thread.reset(new std::thread(run));
+#endif // !ROS_BRIDGE
 }
 
 void TimeSync::init_status_pub(TimesyncStatusPublisher *status_pub)
 {
+#ifndef ROS_BRIDGE
 	auto run = [this, status_pub]() {
 		while (!_request_stop) {
 			timesync_status_msg_t status_msg = newTimesyncStatusMsg();
@@ -85,6 +88,7 @@ void TimeSync::init_status_pub(TimesyncStatusPublisher *status_pub)
 	};
 	_request_stop = false;
 	_send_timesync_status_thread.reset(new std::thread(run));
+#endif // !ROS_BRIDGE
 }
 
 void TimeSync::stop()
@@ -196,12 +200,12 @@ void TimeSync::processTimesyncMsg(timesync_msg_t* msg, const rclcpp::Publisher<p
 		if (getMsgTC1(msg) > 0) {
 			if (!addMeasurement(getMsgTS1(msg), getMsgTC1(msg), getSteadyTimeNSec())) {
 				if (_debug) {
-#ifdef ANDROID
+#ifdef __ANDROID__
 					LOGW("[ micrortps__timesync ] Offset not updated");
 #else
 					std::cerr << "\033[1;33m[ micrortps__timesync ]\tOffset not updated\033[0m"
 							  << std::endl;
-#endif // ANDROID
+#endif // __ANDROID__
 				}
 			}
 
@@ -243,6 +247,33 @@ void TimeSync::processTimesyncMsg(timesync_msg_t *msg, TimesyncPublisher *pub)
 	}
 }
 
+#ifdef ROS_BRIDGE
+px4_msgs::msg::Timesync TimeSync::newTimesyncMsg() {
+	px4_msgs::msg::Timesync msg;
+	msg.timestamp = getSteadyTimeUSec();
+	msg.seq = _last_msg_seq;
+	msg.tc1 = 0;
+	msg.ts1 = static_cast<long>(getSteadyTimeNSec());
+
+	_last_msg_seq++;
+
+	return msg;
+}
+
+px4_msgs::msg::TimesyncStatus TimeSync::newTimesyncStatusMsg() {
+	px4_msgs::msg::TimesyncStatus msg;
+	msg.timestamp = getSteadyTimeUSec();
+	msg.source_protocol = 1;
+	msg.remote_timestamp = _remote_time_stamp.load() / 1000ULL;
+	msg.observed_offset = _offset_prev.load();
+	msg.estimated_offset = _offset_ns.load();
+	msg.round_trip_time = _rtti.load() / 1000ll;
+
+	return msg;
+}
+
+#else
+
 timesync_msg_t TimeSync::newTimesyncMsg()
 {
 	timesync_msg_t msg{};
@@ -270,3 +301,5 @@ timesync_status_msg_t TimeSync::newTimesyncStatusMsg()
 
 	return msg;
 }
+
+#endif // ROS_BRIDGE

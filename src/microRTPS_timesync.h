@@ -49,6 +49,7 @@
 #ifdef ROS_BRIDGE
 #include <rclcpp/rclcpp.hpp>
 #include <px4_msgs/msg/timesync.hpp>
+#include <px4_msgs/msg/timesync_status.hpp>
 #endif // ROS_BRIDGE
 
 static constexpr double ALPHA_INITIAL = 0.05;
@@ -128,17 +129,25 @@ public:
 	 */
 	void processTimesyncMsg(timesync_msg_t *msg, TimesyncPublisher *pub);
 
+#ifdef ROS_BRIDGE
+	px4_msgs::msg::Timesync newTimesyncMsg();
+#else
 	/**
 	 * @brief Creates a new timesync DDS message to be sent from the g_agent to the client
 	 * @return A new timesync message with the origin in the g_agent and with the g_agent timestamp
 	 */
 	timesync_msg_t newTimesyncMsg();
+#endif // ROS_BRIDGE
 
+#ifdef ROS_BRIDGE
+	px4_msgs::msg::TimesyncStatus newTimesyncStatusMsg();
+#else
 	/**
 	 * @brief Creates a new timesync status DDS message to be sent from the g_agent to the client
 	 * @return A new timesync status message with the origin in the g_agent and with the g_agent timestamp
 	 */
 	timesync_status_msg_t newTimesyncStatusMsg();
+#endif // ROS_BRIDGE
 
 	/**
 	 * @brief Get the time sync offset in nanoseconds
