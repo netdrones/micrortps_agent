@@ -662,7 +662,7 @@ bool RtpsTopics::init(std::condition_variable *t_send_queue_cv, std::mutex *t_se
 	LOGD("- sensor_combined publisher started");
 	sensor_combined_pub_ = this->create_publisher<SensorCombined>(
 		ns + "fmu/sensor_combined/out",
-	rclcpp::QoS(10)
+	rclcpp::QoS(50)
 	);
 
 	LOGD("- vehicle_trajectory_waypoint_desired publisher started");
@@ -777,6 +777,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 		st.deserialize(cdr_des);
 
 #ifdef ROS_BRIDGE
+//		LOGD("Timesync: seq=%d, tc1=%ld, ts1=%ld", st.seq_(), st.tc1_(), st.ts1_());
 		_timesync->processTimesyncMsg(&st, timesync_pub_);
 #else
 		_timesync->processTimesyncMsg(&st, &_timesync_pub);

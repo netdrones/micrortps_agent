@@ -163,9 +163,15 @@ bool TimeSync::addMeasurement(int64_t local_t1_ns, int64_t remote_t2_ns, int64_t
 		}
 	}
 
-	// ignore if rtti > 50ms
-	if (_rtti.load() > 50ll * 1000ll * 1000ll) {
-		if (_debug) { std::cout << "\033[1;33m[ micrortps__timesync ]\tRTTI too high for timesync: " << _rtti.load() / (1000ll * 1000ll) << "ms\033[0m" << std::endl; }
+	// ignore if rtti > 100ms
+	if (_rtti.load() > 100ll * 1000ll * 1000ll) {
+		if (_debug) {
+#ifdef __ANDROID__
+			LOGD("[ micrortps__timesync ] RTTI too high for timesync: %lld ms", _rtti.load() / (1000ll * 1000ll));
+#else
+			std::cout << "\033[1;33m[ micrortps__timesync ]\tRTTI too high for timesync: " << _rtti.load() / (1000ll * 1000ll) << "ms\033[0m" << std::endl;
+#endif // __ANDROID__
+		}
 
 		return false;
 	}

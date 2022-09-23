@@ -69,9 +69,8 @@ bool MicroRTPSAgent::Start() {
     LOGD("RTPS namespace: %s", ns_.c_str());
 //    LOGD("ROS_LOCALHOST_ONLY: %s", std::getenv("ROS_LOCALHOST_ONLY"));
 
-
     std::queue<uint8_t>().swap(send_queue_);
-    topics_->set_timesync(std::make_shared<TimeSync>(verbose_));
+    topics_->set_timesync(std::make_shared<TimeSync>(false));
     topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue_, ns_);
 
     running_.test_and_set();
