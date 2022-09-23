@@ -35,7 +35,7 @@
 #include "logging-android.h"
 
 static const int TOPIC_ID_OFFBOARD_CONTROL_MODE = 5;
-//static const int TOPIC_ID_SENSOR_OPTICAL_FLOW = 6;
+static const int TOPIC_ID_SENSOR_OPTICAL_FLOW = 6;
 static const int TOPIC_ID_POSITION_SETPOINT = 7;
 static const int TOPIC_ID_POSITION_SETPOINT_TRIPLET = 8;
 static const int TOPIC_ID_TELEMETRY_STATUS = 9;
@@ -70,7 +70,7 @@ using namespace std::chrono_literals;
 //using DebugValue = px4_msgs::msg::DebugValue;
 //using DebugVect = px4_msgs::msg::DebugVect;
 using OffboardControlMode = px4_msgs::msg::OffboardControlMode;
-//using OpticalFlow = px4_msgs::msg::OpticalFlow;
+using SensorOpticalFlow = px4_msgs::msg::SensorOpticalFlow;
 using PositionSetpoint = px4_msgs::msg::PositionSetpoint;
 using PositionSetpointTriplet = px4_msgs::msg::PositionSetpointTriplet;
 using TelemetryStatus = px4_msgs::msg::TelemetryStatus;
@@ -1237,20 +1237,33 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case 6: { // sensor_optical_flow subscriber
+	case TOPIC_ID_SENSOR_OPTICAL_FLOW: { // sensor_optical_flow subscriber
 #ifdef ROS_BRIDGE
-// TODO: OpticalFlow.msg does not exist in latest px4_msg
-# if 0
-		std::unique_lock lk(mtx_optical_flow_);
-		if (auto m = optical_flow_.get()) {
-			optical_flow_msg_t msg;
+		std::unique_lock lk(mtx_sensor_optical_flow_);
+		if (auto m = sensor_optical_flow_.get()) {
+			sensor_optical_flow_msg_t msg;
             msg.timestamp_(m->timestamp);
+			msg.timestamp_sample_(m->timestamp_sample);
 			sync_timestamp_of_outgoing_data(msg);
+			msg.device_id_(m->device_id);
+			msg.pixel_flow(m->pixel_flow);
+			msg.delta_angle(m->delta_angle);
+			msg.delta_angle_available_(m->delta_angle_available);
+			msg.distance_m_(m->distance_m);
+			msg.distance_available_(m->distance_available);
+			msg.integration_timespan_us_(m->integration_timespan_us);
+			msg.quality_(m->quality);
+			msg.error_count_(m->error_count);
+			msg.max_flow_rate_(m->max_flow_rate);
+			msg.min_ground_distance_(m->min_ground_distance);
+			msg.max_ground_distance_(m->max_ground_distance);
+			msg.mode_(m->mode);
 
-//			msg.serialize(scdr);
-//			ret = true;
+			sensor_optical_flow_.reset();
+			cv_sensor_optical_flow_.notify_one();
+			msg.serialize(scdr);
+			ret = true;
 		}
-# endif
 #else
         if (_optical_flow_sub.hasMsg()) {
             optical_flow_msg_t msg = _optical_flow_sub.getMsg();

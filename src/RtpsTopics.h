@@ -55,7 +55,7 @@
 #include "debug_value_Subscriber.h"
 #include "debug_vect_Subscriber.h"
 #include "offboard_control_mode_Subscriber.h"
-#include "optical_flow_Subscriber.h"
+#include "sensor_optical_flow_Subscriber.h"
 #include "position_setpoint_Subscriber.h"
 #include "position_setpoint_triplet_Subscriber.h"
 #include "telemetry_status_Subscriber.h"
@@ -82,14 +82,12 @@
 # include <px4_msgs/msg/timesync_status.hpp>
 # include <px4_msgs/msg/sensor_combined.hpp>
 # include <px4_msgs/msg/vehicle_trajectory_waypoint_desired.hpp>
-// FIXME: px4_msgs generated code doesn't compile
 //# include <px4_msgs/msg/debug_array.hpp>
 //# include <px4_msgs/msg/debug_key_value.hpp>
 //# include <px4_msgs/msg/debug_value.hpp>
 //# include <px4_msgs/msg/debug_vect.hpp>
 # include <px4_msgs/msg/offboard_control_mode.hpp>
-// TODO: OpticalFlow.msg does not exist in latest px4_msg
-//# include <px4_msgs/msg/optical_flow.hpp>
+# include <px4_msgs/msg/sensor_optical_flow.hpp>
 # include <px4_msgs/msg/position_setpoint.hpp>
 # include <px4_msgs/msg/position_setpoint_triplet.hpp>
 # include <px4_msgs/msg/telemetry_status.hpp>
@@ -109,7 +107,7 @@ using debug_key_value_msg_t = debug_key_value;
 using debug_value_msg_t = debug_value;
 using debug_vect_msg_t = debug_vect;
 using offboard_control_mode_msg_t = offboard_control_mode;
-using optical_flow_msg_t = optical_flow;
+using sensor_optical_flow_msg_t = sensor_optical_flow;
 using position_setpoint_msg_t = position_setpoint;
 using position_setpoint_triplet_msg_t = position_setpoint_triplet;
 using telemetry_status_msg_t = telemetry_status;
@@ -185,7 +183,7 @@ private:
 //	rclcpp::Subscription<px4_msgs::msg::DebugVect>::SharedPtr debug_vect_sub_;
 //	rclcpp::Subscription<px4_msgs::msg::DebugValue>::SharedPtr debug_value_sub_;
 	rclcpp::Subscription<px4_msgs::msg::OffboardControlMode>::SharedPtr offboard_control_mode_sub_;
-//	rclcpp::Subscription<px4_msgs::msg::OpticalFlow>::SharedPtr optical_flow_sub_;
+	rclcpp::Subscription<px4_msgs::msg::SensorOpticalFlow>::SharedPtr sensor_optical_flow_sub_;
 	rclcpp::Subscription<px4_msgs::msg::PositionSetpoint>::SharedPtr position_setpoint_sub_;
 	rclcpp::Subscription<px4_msgs::msg::PositionSetpointTriplet>::SharedPtr position_setpoint_triplet_sub_;
 	rclcpp::Subscription<px4_msgs::msg::TelemetryStatus>::SharedPtr telemetry_status_sub_;
@@ -227,7 +225,7 @@ private:
 			   mtx_debug_value_,
 			   mtx_debug_vect_,
 		       mtx_offboard_control_mode_,
-			   mtx_optical_flow_,
+			   mtx_sensor_optical_flow_,
 			   mtx_position_setpoint_,
 			   mtx_position_setpoint_triplet_,
 			   mtx_telemetry_status_,
@@ -247,7 +245,7 @@ private:
 							cv_debug_value_,
 						    cv_debug_vect_,
 							cv_offboard_control_mode_,
-							cv_optical_flow_,
+							cv_sensor_optical_flow_,
 							cv_position_setpoint_,
 							cv_position_setpoint_triplet_,
 							cv_telemetry_status_,
@@ -273,7 +271,7 @@ private:
 //	px4_msgs::msg::DebugKeyValue::UniquePtr debug_key_value_;
 //	px4_msgs::msg::DebugValue::UniquePtr debug_value_;
 	px4_msgs::msg::OffboardControlMode::UniquePtr offboard_control_mode_;
-//	px4_msgs::msg::OpticalFlow::UniquePtr optical_flow_;
+	px4_msgs::msg::SensorOpticalFlow::UniquePtr sensor_optical_flow_;
 	px4_msgs::msg::PositionSetpoint::UniquePtr position_setpoint_;
 	px4_msgs::msg::PositionSetpointTriplet::UniquePtr position_setpoint_triplet_;
 	px4_msgs::msg::TelemetryStatus::UniquePtr telemetry_status_;
