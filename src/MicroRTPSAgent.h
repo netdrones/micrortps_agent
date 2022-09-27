@@ -33,7 +33,7 @@ public:
      */
     MicroRTPSAgent(int fd,
                    int baudrate,
-                   int flow_ctrl=0,
+                   int flow_ctrl,
                    bool verbose=false);
 
     /**

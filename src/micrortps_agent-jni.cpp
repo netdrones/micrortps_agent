@@ -27,7 +27,7 @@ void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUART(
 }
 
 extern "C"
-void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUdp(
+void Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUDP(
     JNIEnv* env,
     jobject thiz,
     jint recv_port,
@@ -91,12 +91,41 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void*) {
     if (!klass) return JNI_ERR;
 
     static const JNINativeMethod methods[] = {
-        {"nativeInitUART", "(IIIZ)V", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUART)},
-        {"nativeRelease", "()V", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeRelease)},
-        {"setRosLocalhostOnly", "(Z)V", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_setRosLocalhostOnly)},
-        {"setRosNamespace", "(Ljava/lang/String;)V", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_setRosNamespace)},
-        {"start", "()Z", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_start)},
-        {"stop", "()Z", reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_stop)},
+        {
+            "nativeInitUART",
+            "(IIIZ)V",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUART)
+        },
+        {
+            "nativeInitUDP",
+            "(II)V",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeInitUDP)
+        },
+        {
+            "nativeRelease",
+            "()V",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_nativeRelease)
+        },
+        {
+            "setRosLocalhostOnly",
+            "(Z)V",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_setRosLocalhostOnly)
+        },
+        {
+            "setRosNamespace",
+            "(Ljava/lang/String;)V",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_setRosNamespace)
+        },
+        {
+            "start",
+            "()Z",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_start)
+        },
+        {
+            "stop",
+            "()Z",
+            reinterpret_cast<void*>(Java_es_netdron_micrortps_1agent_MicroRtpsAgent_stop)
+        },
     };
     auto rc = env->RegisterNatives(klass, methods, sizeof(methods) / sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;

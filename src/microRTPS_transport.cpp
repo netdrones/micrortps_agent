@@ -699,7 +699,7 @@ int UDP_node::init_receiver(uint16_t udp_port)
 	_receiver_inaddr.sin_port = htons(udp_port);
 	_receiver_inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if ((_receiver_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	if ((_receiver_fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 #ifndef PX4_ERR
 		printf("\033[0;31m[ micrortps_transport ]\tUDP transport: Create socket failed\033[0m\n");
 #else
@@ -736,7 +736,7 @@ int UDP_node::init_sender(uint16_t udp_port)
 {
 #if !defined (__PX4_NUTTX) || (defined (CONFIG_NET) && defined (__PX4_NUTTX))
 
-	if ((_sender_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	if ((_sender_fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 #ifndef PX4_ERR
 		printf("\033[0;31m[ micrortps_transport ]\tUDP transport: Create socket failed\033[0m\n");
 #else

@@ -1239,6 +1239,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 	}
 	case TOPIC_ID_SENSOR_OPTICAL_FLOW: { // sensor_optical_flow subscriber
 #ifdef ROS_BRIDGE
+#if 0
 		std::unique_lock lk(mtx_sensor_optical_flow_);
 		if (auto m = sensor_optical_flow_.get()) {
 			sensor_optical_flow_msg_t msg;
@@ -1264,6 +1265,7 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 			msg.serialize(scdr);
 			ret = true;
 		}
+#endif
 #else
         if (_optical_flow_sub.hasMsg()) {
             optical_flow_msg_t msg = _optical_flow_sub.getMsg();

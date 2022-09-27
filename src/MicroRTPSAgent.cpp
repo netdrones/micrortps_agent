@@ -36,11 +36,15 @@ MicroRTPSAgent::MicroRTPSAgent(int uart_fd,
         sys_id,
         verbose
     );
+
+    LOGD("Initialize micrortps_agent with serial transport");
 }
 
 MicroRTPSAgent::MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send)
 #ifdef ROS_BRIDGE
 : topics_(std::make_shared<RtpsTopics>())
+#else
+: topics_(std::make_unique<RtpsTopics>())
 #endif // ROS_BRIDGE
 {
     auto sys_id = static_cast<uint8_t>(MicroRtps::System::MISSION_COMPUTER);
@@ -50,6 +54,8 @@ MicroRTPSAgent::MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send)
             udp_port_send,
             sys_id,
             verbose_);
+
+    LOGD("Initialize micrortps_agent with UDP transport");
 }
 
 bool MicroRTPSAgent::Start() {
@@ -61,7 +67,7 @@ bool MicroRTPSAgent::Start() {
     }
 
     if (transport_->init() < 0) {
-        LOGE("USB serial transport initialization failed");
+        LOGE("transport initialization failed");
         return false;
     }
 
