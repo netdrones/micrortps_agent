@@ -74,7 +74,7 @@ public:
 
 private:
     bool verbose_ = false;
-    std::atomic_flag running_ = ATOMIC_FLAG_INIT;
+    std::atomic<bool> running_ = false;
     std::atomic_bool exit_sender_thread_ = false;
     std::string ns_;
     std::queue<uint8_t> send_queue_;

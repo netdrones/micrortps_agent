@@ -55,7 +55,7 @@ MicroRTPSAgent::MicroRTPSAgent(uint16_t udp_port_recv, uint16_t udp_port_send)
             sys_id,
             verbose_);
 
-    LOGD("Initialize micrortps_agent with UDP transport");
+    LOGD("Initialize micrortps_agent with UDP transport (%d, %d)", udp_port_recv, udp_port_send);
 }
 
 bool MicroRTPSAgent::Start() {
@@ -79,7 +79,6 @@ bool MicroRTPSAgent::Start() {
     topics_->set_timesync(std::make_shared<TimeSync>(false));
     topics_->init(&send_queue_cv_, &send_queue_mutex_, &send_queue_, ns_);
 
-    running_.test_and_set();
     exit_sender_thread_ = false;
 
     sender_thread_ = std::thread([this] {
@@ -87,7 +86,8 @@ bool MicroRTPSAgent::Start() {
         uint32_t length;
         uint8_t topic_id;
 
-        while (running_.test_and_set(std::memory_order_acquire) && !exit_sender_thread_) {
+        running_ = true;
+        while (running_.load(std::memory_order_relaxed) && !exit_sender_thread_) {
             std::unique_lock <std::mutex> lk(send_queue_mutex_);
 
             while (send_queue_.empty() && !exit_sender_thread_) {
@@ -125,7 +125,7 @@ bool MicroRTPSAgent::Start() {
     executor_thread_ = std::thread([this] {
         executor_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
         executor_->add_node(topics_);
-        while (running_.test_and_set()) {
+        while (running_.load(std::memory_order_relaxed)) {
             executor_->spin_some();
         }
     });
@@ -135,28 +135,27 @@ bool MicroRTPSAgent::Start() {
 }
 
 bool MicroRTPSAgent::Stop() {
-//    LOGD("stopping micrortps_agent");
-
-    if (running_.test(std::memory_order_acquire)) {
-        running_.clear(std::memory_order_release);
+    if (running_.load(std::memory_order_acquire)) {
+        LOGD("stopping micrortps_agent");
+        running_ = false;
 
         exit_sender_thread_ = true;
-        if (sender_thread_.joinable() || poll_serial_thread_.joinable()) {
-            send_queue_cv_.notify_one();
-            if (sender_thread_.joinable()) {
-                sender_thread_.join();
-            }
-            transport_->close();
-            if (poll_serial_thread_.joinable()) {
-                poll_serial_thread_.join();
-            }
+        send_queue_cv_.notify_one();
+        if (sender_thread_.joinable()) {
+            sender_thread_.join();
+        }
+        transport_->close();
+        if (poll_serial_thread_.joinable()) {
+            poll_serial_thread_.join();
         }
 #ifdef ROS_BRIDGE
+        LOGD("stopping executor thread");
         if (executor_thread_.joinable()) {
             executor_thread_.join();
             executor_.reset();
         }
 #endif
+        LOGD("Stopped");
     }
 
     return true;
@@ -166,9 +165,13 @@ void MicroRTPSAgent::PollSerial() {
     uint8_t topic_id = 255;
     char buffer[BUFFER_SIZE];
 
-    while (running_.test(std::memory_order_acquire)) {
+    using namespace std::chrono_literals;
+
+    while (running_.load(std::memory_order_relaxed)) {
         // Publishing messages from UART to Fast-RTPS
-        auto len = transport_->read(&topic_id, reinterpret_cast<char *>(&buffer), BUFFER_SIZE);
+        auto len = transport_->read(&topic_id,
+                                    reinterpret_cast<char *>(&buffer),
+                                    BUFFER_SIZE);
         if (len > 0) {
             topics_->publish(topic_id, buffer, sizeof(buffer));
         }
