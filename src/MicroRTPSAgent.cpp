@@ -136,7 +136,7 @@ bool MicroRTPSAgent::Start() {
 
 bool MicroRTPSAgent::Stop() {
     if (running_.load(std::memory_order_acquire)) {
-        LOGD("stopping micrortps_agent");
+        LOGD("Stopping");
         running_ = false;
 
         exit_sender_thread_ = true;
@@ -149,7 +149,6 @@ bool MicroRTPSAgent::Stop() {
             poll_serial_thread_.join();
         }
 #ifdef ROS_BRIDGE
-        LOGD("stopping executor thread");
         if (executor_thread_.joinable()) {
             executor_thread_.join();
             executor_.reset();
