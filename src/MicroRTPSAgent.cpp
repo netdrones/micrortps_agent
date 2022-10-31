@@ -175,5 +175,4 @@ void MicroRTPSAgent::PollSerial() {
             topics_->publish(topic_id, buffer, sizeof(buffer));
         }
     }
-    topics_.reset();
 }
