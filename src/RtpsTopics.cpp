@@ -44,21 +44,21 @@ static const int TOPIC_ID_TRAJECTORY_WAYPOINT = 11;
 static const int TOPIC_ID_VEHICLE_COMMAND = 12;
 static const int TOPIC_ID_VEHICLE_CONTROL_MODE = 13;
 static const int TOPIC_ID_VEHICLE_LOCAL_POSITION_SETPOINT = 14;
-static const int TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT = 15;
-static const int TOPIC_ID_VEHICLE_RATES_SETPOINT = 16;
-static const int TOPIC_ID_TRAJECTORY_SETPOINT = 17;
-static const int TOPIC_ID_VEHICLE_ODOMETRY = 18;
-static const int TOPIC_ID_VEHICLE_MOCAP_ODOMETRY = 19;
-static const int TOPIC_ID_VEHICLE_VISUAL_ODOMETRY = 20;
-static const int TOPIC_ID_VEHICLE_STATUS = 21;
-static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT = 22;
-static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT_DESIRED = 23;
-static const int TOPIC_ID_COLLISION_CONSTRAINTS = 24;
-static const int TOPIC_ID_ONBOARD_COMPUTER_STATUS = 25;
-static const int TOPIC_ID_TRAJECTORY_BEZIER = 26;
-static const int TOPIC_ID_VEHICLE_TRAJECTORY_BEZIER = 27;
-static const int TOPIC_ID_TIMESYNC_STATUS = 28;
-static const int TOPIC_ID_SENSOR_COMBINED = 29;
+//static const int TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT = 15;
+//static const int TOPIC_ID_VEHICLE_RATES_SETPOINT = 16;
+static const int TOPIC_ID_TRAJECTORY_SETPOINT = 15;
+static const int TOPIC_ID_VEHICLE_ODOMETRY = 16;
+static const int TOPIC_ID_VEHICLE_MOCAP_ODOMETRY = 17;
+static const int TOPIC_ID_VEHICLE_VISUAL_ODOMETRY = 18;
+static const int TOPIC_ID_VEHICLE_STATUS = 19;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT = 20;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT_DESIRED = 21;
+static const int TOPIC_ID_COLLISION_CONSTRAINTS = 22;
+static const int TOPIC_ID_ONBOARD_COMPUTER_STATUS = 23;
+static const int TOPIC_ID_TRAJECTORY_BEZIER = 24;
+static const int TOPIC_ID_VEHICLE_TRAJECTORY_BEZIER = 25;
+static const int TOPIC_ID_TIMESYNC_STATUS = 26;
+static const int TOPIC_ID_SENSOR_COMBINED = 27;
 
 #ifdef ROS_BRIDGE
 
@@ -890,6 +890,8 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 	break;
 
 	case TOPIC_ID_VEHICLE_STATUS: { // vehicle_status publisher
+// FIXME(rakuto) - crash with FW version: 1.13.1 0 (17629440)
+#if 0
 		vehicle_status_msg_t st;
 		eprosima::fastcdr::FastBuffer cdrbuffer(data_buffer, len);
 		eprosima::fastcdr::Cdr cdr_des(cdrbuffer);
@@ -940,6 +942,7 @@ void RtpsTopics::publish(const uint8_t topic_ID, char data_buffer[], size_t len)
 #else
 		_vehicle_status_pub.publish(&st);
 #endif // ROS_BRIDGE
+#endif // if 0
 	}
 	break;
 
@@ -1549,10 +1552,10 @@ bool RtpsTopics::getMsg(const uint8_t topic_ID, eprosima::fastcdr::Cdr &scdr)
 #endif // ROS_BRIDGE
 		break;
 	}
-	case TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT: { // vehicle_attitude_setpoint subscriber
-		// TODO: vehicle_attitude_setpoint
-		break;
-	}
+//	case TOPIC_ID_VEHICLE_ATTITUDE_SETPOINT: { // vehicle_attitude_setpoint subscriber
+//		// TODO: vehicle_attitude_setpoint
+//		break;
+//	}
 	case TOPIC_ID_VEHICLE_TRAJECTORY_WAYPOINT: { // vehicle_trajectory_waypoint subscriber
 #ifdef ROS_BRIDGE
 		std::unique_lock lk(mtx_vehicle_trajectory_waypoint_);
